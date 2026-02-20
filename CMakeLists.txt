@@ -11,5 +11,6 @@ include_directories(include)
 
 enable_testing()
 
-add_executable(testPool test/testPools.cpp)
+add_executable(testMemPool test/testPools.cpp)
+add_test(NAME testPool COMMAND testMemPool WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 

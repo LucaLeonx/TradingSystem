@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 #include "mem_pool.hpp"
 
 struct myStruct{
@@ -14,6 +15,9 @@ int main(){
 
     MemPool<int> pool1(100);
     MemPool<myStruct> pool2(100);
+
+    assert(pool1.allocate(10));
+    assert(pool2.allocate(myStruct{10,10.0}));
 
     int *addr = pool1.allocate(7);
     std::cout<<"Allocated on first pool obj: " << *addr << " at addr: " <<addr <<std::endl;
