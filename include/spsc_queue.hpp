@@ -22,20 +22,24 @@ public:
     spscQueue& operator=(spscQueue const &) = delete; //copy assignment
     spscQueue& operator=(spscQueue&& other) = delete; //Move assignment
 
+    ///Get the reference of the next write position in the queue, REMEMBER TO USE updateNextWrite() if the value has been modified
     auto getNextWrite() noexcept{
         return &store_[next_write_idx];
     }
 
+    ///Update the pointer to the next available write spot 
     auto updateNextWrite() noexcept{
         next_write_idx = (next_write_idx + 1) % store_.size();
         num_elements++;
     }
 
+    ///Get the reference of the next read position in the queue, REMEMBER TO USE updateNextWrite() if the value has been read
     const T* getNextRead() const noexcept{
         if(next_read_idx == next_write_idx) return nullptr;
         return &store_[next_read_idx];
     }
 
+    ///Update the pointer to the next available read spot 
     auto updateNextRead(){
         next_read_idx = (next_read_idx + 1) % store_.size();
         assert(num_elements != 0);
@@ -47,6 +51,6 @@ public:
     }
 
     bool empty() noexcept{
-        return this->size() == 0;
+        return size() == 0;
     }
 };
