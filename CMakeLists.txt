@@ -16,3 +16,6 @@ add_test(NAME testPool COMMAND testMemPool WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 
 add_executable(testSPSCQueue test/testSPSCQueue.cpp)
 add_test(NAME testLockFreeQueue COMMAND testSPSCQueue WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_executable(testLogger test/testLogger.cpp)
+add_test(NAME testAsyncLogger COMMAND testLogger WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

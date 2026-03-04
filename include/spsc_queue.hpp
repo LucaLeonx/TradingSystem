@@ -33,7 +33,7 @@ public:
         num_elements++;
     }
 
-    ///Get the reference of the next read position in the queue, REMEMBER TO USE updateNextWrite() if the value has been read
+    ///Get the reference of the next read position in the queue, REMEMBER TO USE updateNextRead() if the value has been read
     const T* getNextRead() const noexcept{
         if(next_read_idx == next_write_idx) return nullptr;
         return &store_[next_read_idx];
