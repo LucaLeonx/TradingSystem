@@ -34,10 +34,9 @@ public:
         using namespace std::literals::chrono_literals;
 
         while(running){
-            std::this_thread::sleep_for(1s);
             auto toPrint = loggerQueue.getNextRead(); 
             if(toPrint != nullptr){
-                file << *toPrint << '\n';
+                file << *toPrint;
                 loggerQueue.updateNextRead();
                 file.flush();
             }
@@ -50,7 +49,7 @@ public:
     /// @note This function returns early if the operator<< produces an empty string
     /// @note It raise an exceptions; it may produce unexpected results
     ///       for floating-point special values (NaN, Inf) but will not throw
-    void pushVal(T val){
+    void pushVal(T val) noexcept{
         std::ostringstream oss;
         oss << val;
         std::string newVal = oss.str();
@@ -63,6 +62,31 @@ public:
         loggerQueue.updateNextWrite();
     }
 
+    ///Print-like function for log strings into file using % as a general escape character 
+    template<typename T, typename ...Targs>
+    void log(const char* text,const T& value, Targs... args ) noexcept{
+        while(*text){
+            if(*text == '%'){
+                if(*(text + 1) == '%') ++text;
+                else{
+                    pushVal(value);
+                    log(text + 1, args...); //recursive call
+                    return;
+                }
+            }
+            pushVal(*text++);
+        }
+    }
+
+
+    void log(const char* text) noexcept{
+        for(; *text != '\0'; text++){
+            pushVal(*text);
+        }
+    }
+    
+
+
     Logger() = delete;
     Logger(Logger&& ) = delete; // Move contructor
     Logger(Logger const & ) = delete; // Copy constructor
@@ -72,7 +96,7 @@ public:
 
     ~Logger(){
         using namespace std::literals::chrono_literals;
-        std::cout<<"Closing logger at "<< getCurrentTimeStr() <<" , flushing the queue..."<<std::endl;
+        std::cout<<"Closing logger at "<< getCurrentTimeStr() <<" -> flushing the queue..."<<std::endl;
         
         while(!loggerQueue.empty()){
             std::this_thread::sleep_for(3s);

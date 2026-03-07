@@ -11,12 +11,11 @@ int main(){
 
     Logger logger{"file.log"};
     std::this_thread::sleep_for(4s);
+    std::string var{"Robot"};
 
-    logger.pushVal(5);
-    logger.pushVal(5.0);
-    logger.pushVal("Ciao");
-    logger.pushVal('g');
-    logger.pushVal(5.0f);
+    logger.log("Hi %, this is test number:%\n", var,0);
+    logger.log("Hi %, this is test numb:%\n", 2.3,"1");
+    logger.log("Hi %%, this is test numb:%\n");
     //logger.pushVal(obj{1,2}); //Raise an exception
 
 }
