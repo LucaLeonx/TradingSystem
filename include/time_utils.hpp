@@ -3,6 +3,8 @@
 #include <chrono>
 #include <string>
 
+namespace trading {
+
 using Nanos = int64_t;
 
 constexpr Nanos NANOS_TO_MICROS = 1000;
@@ -13,4 +15,6 @@ inline std::string getCurrentTimeStr() {
     auto now = std::chrono::system_clock::now();
     auto time = std::chrono::system_clock::to_time_t(now);
     return std::string(std::ctime(&time));
+}
+
 }

@@ -1,6 +1,13 @@
 .vscode
+
+#Binaries
 *.out
 bin
 build
+
+#Code
 snippet.cpp
+
+#Logs
 *.log
+logs

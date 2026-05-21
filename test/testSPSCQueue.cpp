@@ -7,7 +7,7 @@
 using namespace std::literals::chrono_literals;
 
 int main(){
-    spscQueue<int> lfQueue(30);
+    trading::spscQueue<int> lfQueue(30);
 
     auto consumer = [&lfQueue] (){
         std::this_thread::sleep_for(5s); 
@@ -24,7 +24,7 @@ int main(){
         }
     };
 
-    auto c = createAndStartThread(7, "consumerThread", consumer);
+    auto c = trading::createAndStartThread(7, "consumerThread", consumer);
     
     for(int i{}; i < 20; ++i){    
         *lfQueue.getNextWrite() = 10;

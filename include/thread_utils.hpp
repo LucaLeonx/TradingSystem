@@ -5,6 +5,8 @@
 #include <atomic>
 #include <sys/syscall.h>
 
+namespace trading {
+
 /// Set the current thread to a fixed CPU core defined by core_id
 inline bool setThreadAffinity(int core_id) noexcept{
     cpu_set_t cpu_set;
@@ -34,4 +36,6 @@ inline auto createAndStartThread(int core_id, const std::string& name, T&& func,
     std::this_thread::sleep_for(1s);
 
     return t;
+}
+
 }

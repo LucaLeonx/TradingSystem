@@ -4,6 +4,8 @@
 #include <vector>
 #include <cassert>
 
+namespace trading::memory {
+
 template <typename T>
 class MemPool
 {
@@ -67,3 +69,5 @@ public:
         cells[index].is_free = true;
     }
 };
+
+}

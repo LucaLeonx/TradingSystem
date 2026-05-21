@@ -9,10 +9,13 @@
 #include "spsc_queue.hpp"
 #include "thread_utils.hpp"
 #include "time_utils.hpp"
+#include "macros.hpp"
+
+namespace trading {
 
 constexpr size_t defaultQueueSize = 8 * 1024 * 1024;
 
-class Logger
+class Logger final
 {
 private: 
     std::ofstream file;
@@ -25,9 +28,8 @@ private:
 public: 
     Logger(const std::string& filename, size_t queueLength = defaultQueueSize) : fileName(filename), loggerQueue(queueLength){
         file.open(filename);
-        if(file.is_open()){
-            loggerThread = createAndStartThread(-1, "logger" + filename, [this]{ flushQueue();});
-        }else std::cerr<<"Could not open the file" << filename << std::endl;
+        ASSERT(file.is_open(),"File creation failed.");
+        loggerThread = createAndStartThread(-1, "logger" + filename, [this]{ flushQueue();});
     } 
 
     void flushQueue(){
@@ -106,5 +108,6 @@ public:
         loggerThread.join();
         file.close();
     }
-
 };
+
+}

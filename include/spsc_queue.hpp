@@ -4,6 +4,8 @@
 #include <atomic>
 #include <cassert>
 
+namespace trading {
+
 template<typename T>
 class spscQueue final{
 private:
@@ -34,7 +36,7 @@ public:
     }
 
     ///Get the reference of the next read position in the queue, REMEMBER TO USE updateNextRead() if the value has been read
-    const T* getNextRead() const noexcept{
+    auto getNextRead() const noexcept -> const T*{
         if(next_read_idx == next_write_idx) return nullptr;
         return &store_[next_read_idx];
     }
@@ -54,3 +56,5 @@ public:
         return size() == 0;
     }
 };
+
+}

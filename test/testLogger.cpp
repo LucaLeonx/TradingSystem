@@ -9,7 +9,7 @@ struct obj{
 
 int main(){
 
-    Logger logger{"file.log"};
+    trading::Logger logger{"../logs/test1.log"};
     std::this_thread::sleep_for(4s);
     std::string var{"Robot"};
 
