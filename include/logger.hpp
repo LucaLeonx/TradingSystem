@@ -66,7 +66,7 @@ public:
 
     ///Print-like function for log strings into file using % as a general escape character 
     template<typename T, typename ...Targs>
-    void log(const char* text,const T& value, Targs... args ) noexcept{
+    void log(const char* text,const T& value, Targs... args) noexcept{
         while(*text){
             if(*text == '%'){
                 if(*(text + 1) == '%') ++text;

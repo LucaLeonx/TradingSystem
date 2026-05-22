@@ -17,4 +17,11 @@ inline std::string getCurrentTimeStr() {
     return std::string(std::ctime(&time));
 }
 
+inline auto getCurrentTimeStr(std::string* time_str) {
+    auto now = std::chrono::system_clock::now();
+    auto time = std::chrono::system_clock::to_time_t(now);
+    time_str->assign(std::ctime(&time));
+    return *time_str;
+}   
+
 }
