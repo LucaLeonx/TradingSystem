@@ -14,15 +14,6 @@ namespace trading{
             recv_buffer_.resize(TCPBufferSize);
         }
 
-        //Create TCP socket with attribute to lister-on or connect-to
-        auto connect(const std::string &ip, const std::string &iface, int port, int is_listening) -> int;
-
-        //Publish data from the send buffer and check if data is available in the receive buffer
-        auto sendAndRecv() noexcept -> bool;
-        
-        ///Write outgoing data to the send buffer
-        auto send(const void* data, size_t len) noexcept -> void;
-
         TCPSocket() = delete;
         TCPSocket(TCPSocket& sock) = delete;
         TCPSocket(TCPSocket&& sock) = delete;
@@ -39,12 +30,21 @@ namespace trading{
         bool send_disconnected_{false};
         bool recv_disconnected_{false};
 
-        struct sockaddr_in inAddr{};
+        struct sockaddr_in socket_attribute_{};
 
         std::function<void(TCPSocket *s,Nanos rx_time)> recv_callbacks_ = nullptr;
 
         std::string time_str_;
         Logger &logger_;
+
+        //Create TCP socket with attribute to lister-on or connect-to
+        auto connect(const std::string &ip, const std::string &iface, int port, bool is_listening) -> int;
+
+        ///Write outgoing data to the send buffer
+        auto send(const void* data, size_t len) noexcept -> void;
+        
+        //Publish data from the send buffer and check if data is available in the receive buffer
+        auto sendAndRecv() noexcept -> bool;
     };
 
 }

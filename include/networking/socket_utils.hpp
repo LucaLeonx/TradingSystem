@@ -102,7 +102,7 @@ namespace trading {
     }
     
     /// Create a TCP / UDP socket to either connect to or listen for data on or listen for connections on the specified interface and IP:port information.
-    [[no_discard]] inline auto createSocket(Logger &logger, const SocketConfigs& socket_cfg) -> int{
+    [[nodiscard]] inline auto createSocket(Logger &logger, const SocketConfigs& socket_cfg) -> int{
         std::string time_str{};
 
         const auto ip = socket_cfg.ip_.empty() ? getIfaceIP(socket_cfg.iface_) : socket_cfg.ip_;

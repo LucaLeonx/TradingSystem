@@ -7,9 +7,10 @@ namespace trading {
 
 using Nanos = int64_t;
 
-constexpr Nanos NANOS_TO_MICROS = 1000;
-constexpr Nanos MICROS_TO_MILLIS = 1000;
-constexpr Nanos MILLIS_TO_SEC = 1000;
+constexpr Nanos NANOS_TO_MICROS = 1e+3;
+constexpr Nanos MICROS_TO_MILLIS = 1e+3;
+constexpr Nanos MILLIS_TO_SECS = 1e+3;
+constexpr Nanos NANOS_TO_SECS = 1e+9;
 
 inline std::string getCurrentTimeStr() {
     auto now = std::chrono::system_clock::now();
@@ -24,4 +25,7 @@ inline auto getCurrentTimeStr(std::string* time_str) {
     return *time_str;
 }   
 
+inline auto getCurrentNanos() noexcept {
+    return std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
 }
