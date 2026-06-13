@@ -42,8 +42,7 @@ namespace trading{
 
             logger_.log("%:% %() % read socket:% len:% utime:% ktime:% diff:%\n", __FILE__, __LINE__, __FUNCTION__,
                           getCurrentTimeStr(&time_str_), fd_, recv_next_valid_idx_, user_time, kernel_time, (user_time - kernel_time));
-            recv_callbacks_(this, kernel_time);
-
+            if(recv_callback_) recv_callback_(this, kernel_time);
         }   
         
         if(send_next_valid_idx_ > 0){

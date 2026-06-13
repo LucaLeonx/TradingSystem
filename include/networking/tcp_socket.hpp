@@ -32,7 +32,7 @@ namespace trading{
 
         struct sockaddr_in socket_attribute_{};
 
-        std::function<void(TCPSocket *s,Nanos rx_time)> recv_callbacks_ = nullptr;
+        std::function<void(TCPSocket *s,Nanos rx_time)> recv_callback_ = nullptr;
 
         std::string time_str_;
         Logger &logger_;

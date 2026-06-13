@@ -13,6 +13,7 @@ include_directories(include/networking)
 set(SOURCES
     src/main.cpp 
     src/tcp_socket.cpp
+    src/tcp_server.cpp
 ) 
 
 add_executable(main ${SOURCES})
