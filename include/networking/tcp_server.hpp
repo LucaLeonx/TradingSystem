@@ -1,13 +1,18 @@
 #pragma once
 
 #include "tcp_socket.hpp"
+
 #include <algorithm>
+#include <memory>
+#include <unordered_map>
+#include <unordered_set>
+#include <cstdint>
 
 namespace trading{
     class TCPServer{
     private:
         ///Add and remove socket file descriptor to and from the EPOLL list
-        auto AddToEpollList(TCPSocket *tcpsocket);
+        bool AddToEpollList(const int fd);
 
     public:
         Logger &logger_;
@@ -18,7 +23,8 @@ namespace trading{
 
         std::array<epoll_event, 1024> events_{};
 
-        std::vector<TCPSocket*> send_sockets_, recv_sockets_;
+        std::unordered_map<int, std::unique_ptr<TCPSocket>> all_sockets_;
+        std::unordered_set<int> send_sockets_, recv_sockets_;
 
         /// Function wrapper to call back when data is available.
         std::function<void(TCPSocket *s, Nanos rx_time)> recv_callback_ = nullptr;
@@ -38,6 +44,10 @@ namespace trading{
 
         ///Check for new or dead connections and updates the related data structures managing them
         void poll() noexcept;
+
+        ~TCPServer() {
+            if(epoll_fd_ != -1) close(epoll_fd_);
+        }
     };
 
 }

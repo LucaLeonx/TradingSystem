@@ -45,6 +45,10 @@ namespace trading{
         
         //Publish data from the send buffer and check if data is available in the receive buffer
         auto sendAndRecv() noexcept -> bool;
+
+        ~TCPSocket(){
+            if(fd_ != -1) close(fd_);
+        }
     };
 
 }

@@ -11,17 +11,19 @@ include_directories(include)
 include_directories(include/networking)
 
 set(SOURCES
-    src/main.cpp 
     src/tcp_socket.cpp
     src/tcp_server.cpp
 ) 
 
-add_executable(main ${SOURCES})
+add_executable(main src/main.cpp ${SOURCES})
 
 enable_testing()
 
 add_executable(testMemPool test/testPools.cpp)
 add_test(NAME testPool COMMAND testMemPool WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_executable(testSocket test/testSocket.cpp ${SOURCES})
+add_test(NAME testSocket COMMAND testSocket WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_executable(testSPSCQueue test/testSPSCQueue.cpp)
 add_test(NAME testLockFreeQueue COMMAND testSPSCQueue WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

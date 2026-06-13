@@ -49,7 +49,7 @@ namespace trading {
         ifaddrs *ifaddr = nullptr;
         
         if(getifaddrs(&ifaddr) != -1){
-            for(ifaddrs *ifa; ifa; ifa = ifa->ifa_next){
+            for(ifaddrs *ifa = ifaddr; ifa; ifa = ifa->ifa_next){
                 if(ifa->ifa_addr && ifa->ifa_addr->sa_family == AF_INET && ifa->ifa_name == iface){
                     getnameinfo(ifa->ifa_addr, sizeof(sockaddr_in), buff, sizeof(buff), NULL, 0, NI_NUMERICHOST);
                     break;
@@ -88,17 +88,17 @@ namespace trading {
     ///Generate software timestamps when network packets hit the network socket
     inline auto setSOTimestamp(int fd) -> bool{
         int one = 1;
-        return setsockopt(fd, SOL_SOCKET , SO_TIMESTAMP, reinterpret_cast<void*>(one), sizeof(one)) == 0;
+        return setsockopt(fd, SOL_SOCKET , SO_TIMESTAMP, reinterpret_cast<void*>(&one), sizeof(one)) == 0;
     }
     
     ///Set Time-To-Live for non-multicast sockets
     inline auto setTTL(int fd, int ttl) -> bool{
-        return setsockopt(fd, IPPROTO_IP, IP_TTL, reinterpret_cast<void*>(ttl), sizeof(ttl)) == 0;
+        return setsockopt(fd, IPPROTO_IP, IP_TTL, reinterpret_cast<void*>(&ttl), sizeof(ttl)) == 0;
     }
 
     ///Set Time-To-Live for multicast sockets
     inline auto setMcastTTL(int fd, int ttl) -> bool{
-        return setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, reinterpret_cast<void*>(ttl), sizeof(ttl)) == 0;
+        return setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, reinterpret_cast<void*>(&ttl), sizeof(ttl)) == 0;
     }
     
     /// Create a TCP / UDP socket to either connect to or listen for data on or listen for connections on the specified interface and IP:port information.
@@ -148,11 +148,12 @@ namespace trading {
             }
         
             if (socket_cfg.needs_so_timestamp_) { // enable software receive timestamps.
-                ASSERT(setSOTimestamp(socket_fd), "setSOTimestamp() failed. errno:" + std::string(strerror(errno)));
+                ASSERT(setSOTimestamp(socket_fd), "setSOTimestamp() failed. errno: " + std::string(strerror(errno)));
             }
 
         }
 
+        freeaddrinfo(results);
         return socket_fd;            
     }    
 
