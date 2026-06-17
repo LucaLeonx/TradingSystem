@@ -1,0 +1,1 @@
+![alt text](images/trading_ecosystem.png)
