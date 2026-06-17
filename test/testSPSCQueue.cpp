@@ -1,8 +1,8 @@
 #include <iostream>
 #include <thread>
 
-#include "spsc_queue.hpp"
-#include "thread_utils.hpp"
+#include "utils/spsc_queue.hpp"
+#include "utils/thread_utils.hpp"
 
 using namespace std::literals::chrono_literals;
 

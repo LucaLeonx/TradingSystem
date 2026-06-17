@@ -8,7 +8,6 @@ set(CMAKE_CXX_FLAGS "-std=c++2a -Wall -Wextra -Werror -fsanitize=address")
 #set(CMAKE_VERBOSE_MAKEFILE on)
 
 include_directories(include)
-include_directories(include/networking)
 
 set(SOURCES
     src/tcp_socket.cpp
@@ -18,6 +17,9 @@ set(SOURCES
 add_executable(main src/main.cpp ${SOURCES})
 
 enable_testing()
+
+add_executable(testSnippet test/snippet.cpp)
+add_test(NAME testSnippet COMMAND testSnippet WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_executable(testMemPool test/testPools.cpp)
 add_test(NAME testPool COMMAND testMemPool WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})

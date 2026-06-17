@@ -1,6 +1,6 @@
-#include "time_utils.hpp"
-#include "logger.hpp"
-#include "tcp_server.hpp"
+#include "utils/time_utils.hpp"
+#include "utils/logger.hpp"
+#include "networking/tcp_server.hpp"
 
 int main(int, char **) {
   using namespace trading;

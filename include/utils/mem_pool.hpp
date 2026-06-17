@@ -4,7 +4,7 @@
 #include <vector>
 #include <cassert>
 
-namespace trading::memory {
+namespace trading {
 
 template <typename T>
 class MemPool

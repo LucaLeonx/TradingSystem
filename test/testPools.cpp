@@ -1,6 +1,6 @@
 #include <iostream>
 #include <cassert>
-#include "mem_pool.hpp"
+#include "utils/mem_pool.hpp"
 
 struct myStruct{
     int val1;
@@ -13,8 +13,8 @@ inline std::ostream& operator<<(std::ostream& os, const myStruct& s) {
 
 int main(){
 
-    trading::memory::MemPool<int> pool1(100);
-    trading::memory::MemPool<myStruct> pool2(100);
+    trading::MemPool<int> pool1(100);
+    trading::MemPool<myStruct> pool2(100);
 
     assert(pool1.allocate(10));
     assert(pool2.allocate(myStruct{10,10.0}));

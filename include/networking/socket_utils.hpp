@@ -13,8 +13,8 @@
 #include <ifaddrs.h>
 #include <fcntl.h>  
 
-#include "macros.hpp"
-#include "logger.hpp"
+#include "utils/macros.hpp"
+#include "utils/logger.hpp"
 
 namespace trading {
     constexpr int MaxTCPServerBacklog = 1024;
