@@ -25,8 +25,8 @@ public:
     spscQueue& operator=(spscQueue&& other) = delete; //Move assignment
 
     ///Get the reference of the next write position in the queue, REMEMBER TO USE updateNextWrite() if the value has been modified
-    auto getNextWrite() noexcept{
-        return &store_[next_write_idx];
+    T& getNextWrite() noexcept{
+        return store_[next_write_idx];
     }
 
     ///Update the pointer to the next available write spot 

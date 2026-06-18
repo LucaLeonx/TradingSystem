@@ -42,7 +42,7 @@ namespace trading::exchange{
         Price price_ = Price_INVALID;
         Qty qty_ = Qty_INVALID; 
 
-        auto toString() const {
+        inline auto toString() const {
             std::stringstream ss;
             ss << "MEClientRequest"
                 << " ["

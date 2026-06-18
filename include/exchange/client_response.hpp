@@ -20,11 +20,21 @@ namespace trading::exchange{
     inline std::ostream& operator<<(std::ostream& os, ClientResponseType c){
         switch (c)
         {
-            case ClientResponseType::INVALID:           os << "INVALID";
-            case ClientResponseType::ACCEPTED:          os << "ACCEPTED";
-            case ClientResponseType::CANCELLED:         os << "CANCELLED";
-            case ClientResponseType::FILLED:            os << "FILLED";
-            case ClientResponseType::CANCEL_REJECTED:   os << "CANCEL_REJECTED";
+            case ClientResponseType::INVALID:           
+                os << "INVALID";
+                break;
+            case ClientResponseType::ACCEPTED:          
+                os << "ACCEPTED";
+                break;
+            case ClientResponseType::CANCELLED:         
+                os << "CANCELLED";
+                break;
+            case ClientResponseType::FILLED:            
+                os << "FILLED";
+                break;
+            case ClientResponseType::CANCEL_REJECTED:   
+                os << "CANCEL_REJECTED";
+                break;
             default: os << "UNKNOWN";
         }
         return os;
@@ -42,7 +52,7 @@ namespace trading::exchange{
         Qty exec_qty_ = Qty_INVALID; 
         Qty left_qty_ = Qty_INVALID; 
 
-        auto toString() const {
+        inline auto toString() const {
             std::stringstream ss;
             ss << "MEClientResponse"
                 << " ["

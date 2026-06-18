@@ -60,7 +60,7 @@ public:
             std::cerr<<"Value cannot be written to a file, no conversion to std::string"<<std::endl;
             return;
         }
-        *loggerQueue.getNextWrite() = newVal;
+        loggerQueue.getNextWrite() = newVal;
         loggerQueue.updateNextWrite();
     }
 

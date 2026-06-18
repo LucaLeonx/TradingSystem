@@ -37,7 +37,7 @@ namespace trading::exchange{
                prev_order_(prev_ptr)
         {}
 
-        auto toString() const {
+        inline auto toString() const {
             std::stringstream ss;
             ss << "MEOrder"
                << " ["
@@ -69,7 +69,7 @@ namespace trading::exchange{
         MEOrdersAtPrice(Side s, Price p, MEOrder *first_order, MEOrdersAtPrice* next, MEOrdersAtPrice* prev) 
             : side_(s), price_(p), orders_head_(first_order), next_(next), prev_(prev) {} 
 
-        auto toString() const {
+        inline auto toString() const {
             std::stringstream ss;
             ss << "MEOrdersAtPrice"
                << " ["

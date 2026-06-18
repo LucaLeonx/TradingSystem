@@ -12,6 +12,7 @@ include_directories(include)
 set(SOURCES
     src/tcp_socket.cpp
     src/tcp_server.cpp
+    src/matching_engine.cpp
 ) 
 
 add_executable(main src/main.cpp ${SOURCES})

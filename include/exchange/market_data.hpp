@@ -19,11 +19,21 @@ namespace trading::exchange{
     inline std::ostream& operator<<(std::ostream& os, MarketUpdateType c){
         switch (c)
         {
-            case MarketUpdateType::INVALID: os << "INVALID";
-            case MarketUpdateType::ADD:     os << "ADD";
-            case MarketUpdateType::MODIFY:  os << "MODIFY";
-            case MarketUpdateType::CANCEL:  os << "CANCEL";
-            case MarketUpdateType::TRADE:   os << "TRADE";
+            case MarketUpdateType::INVALID: 
+                os << "INVALID";
+                break;
+            case MarketUpdateType::ADD:     
+                os << "ADD";
+                break;
+            case MarketUpdateType::MODIFY:  
+                os << "MODIFY";
+                break;
+            case MarketUpdateType::CANCEL:  
+                os << "CANCEL";
+                break;
+            case MarketUpdateType::TRADE:   
+                os << "TRADE";
+                break;
             default: os << "UNKNOWN";
         }
         return os;
@@ -38,7 +48,7 @@ namespace trading::exchange{
         Price price_ = Price_INVALID;
         Priority priority_ = Priority_INVALID; 
     
-        auto toString() const {
+        inline auto toString() const {
             std::stringstream ss;
             ss << "MEMarketUpdate"
                 << " ["

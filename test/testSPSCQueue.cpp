@@ -27,7 +27,7 @@ int main(){
     auto c = trading::createAndStartThread(7, "consumerThread", consumer);
     
     for(int i{}; i < 20; ++i){    
-        *lfQueue.getNextWrite() = 10;
+        lfQueue.getNextWrite() = 10;
         lfQueue.updateNextWrite();
         std::cout<<"Thread "<< std::this_thread::get_id() <<" produced data: "<< 10 <<"\t queue now has: " << lfQueue.size() << " elements."<<std::endl;
         std::this_thread::sleep_for(2s);
