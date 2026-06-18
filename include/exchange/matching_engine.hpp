@@ -16,9 +16,9 @@ namespace trading::exchange{
     private:
         OrderBookHashMap ticker_order_book_;
 
-        ClientRequestLFQueue* incoming_request_queue_ = nullptr;
-        ClientResponseLFQueue* outcoming_response_queue_ = nullptr;
-        MEMarketUpdateLFQueue* market_updates_queue_ = nullptr;
+        ClientRequestLFQueue& incoming_request_queue_;
+        ClientResponseLFQueue& outcoming_response_queue_;
+        MEMarketUpdateLFQueue& market_updates_queue_;
 
         std::thread thread_;
 
@@ -28,7 +28,7 @@ namespace trading::exchange{
         Logger logger_;
 
     public:
-        MatchingEngine(ClientRequestLFQueue* requests_queue, ClientResponseLFQueue* response_queue, MEMarketUpdateLFQueue* market_updates_queue);
+        MatchingEngine(ClientRequestLFQueue& requests_queue, ClientResponseLFQueue& response_queue, MEMarketUpdateLFQueue& market_updates_queue);
 
         ~MatchingEngine();
 

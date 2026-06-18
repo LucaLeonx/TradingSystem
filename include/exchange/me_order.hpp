@@ -60,7 +60,7 @@ namespace trading::exchange{
         Side side_ = Side::INVALID;
         Price price_ = Price_INVALID;
         
-        MEOrder * orders_head_ = nullptr;
+        MEOrder* orders_head_ = nullptr;
 
         MEOrdersAtPrice* next_ = nullptr;
         MEOrdersAtPrice* prev_ = nullptr;

@@ -15,7 +15,7 @@ set(SOURCES
     src/matching_engine.cpp
 ) 
 
-add_executable(main src/main.cpp ${SOURCES})
+add_executable(main src/exchange_main.cpp ${SOURCES})
 
 enable_testing()
 

@@ -14,6 +14,7 @@
 namespace trading {
 
 constexpr size_t defaultQueueSize = 8 * 1024 * 1024;
+const std::string logs_dir{"logs/"};
 
 class Logger final
 {
