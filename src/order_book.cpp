@@ -20,21 +20,21 @@ namespace trading::exchange {
     }
 
     /// Add request to the order book
-    void MEOrderBook::add(ClientId clientId, OrderId client_orderId, TickerId tickerId, Side side, Price price, Qty qty) noexcept{
+    void MEOrderBook::add(ClientId clientId, OrderId client_orderId, Side side, Price price, Qty qty) noexcept{
         const OrderId new_market_order_id = generateNextOrderId();
 
-        matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::ACCEPTED, clientId, tickerId, client_orderId, new_market_order_id, side, price, 0, qty});
+        matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::ACCEPTED, clientId, ticker_, client_orderId, new_market_order_id, side, price, 0, qty});
 
-        const auto qty_left = checkForMatch(clientId, client_orderId, tickerId, side, price, qty, new_market_order_id);//TODO: implement
+        const auto qty_left = checkForMatch(clientId, client_orderId, side, price, qty, new_market_order_id);//TODO: implement
 
         if(qty_left > 0){
             const auto priority = getPriority(price);
 
-            auto orderObj = orders_pool_.allocate(tickerId, clientId, client_orderId, new_market_order_id, side, price, qty_left, priority, nullptr, nullptr);
+            auto orderObj = orders_pool_.allocate(ticker_, clientId, client_orderId, new_market_order_id, side, price, qty_left, priority, nullptr, nullptr);
 
             AddOrderToPriceLevel(orderObj);
 
-            matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::ADD, new_market_order_id, tickerId, side, price, priority});
+            matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::ADD, new_market_order_id, ticker_, side, price, qty, priority});
         }
 
     }
@@ -58,7 +58,7 @@ namespace trading::exchange {
         cid_oid_to_order_.at(order->client_id_).at(order->client_order_id_) = order;
     }
 
-    /// Find the right spot of the orderAtPrice object into the OrderAtPrice Doubly-linked list 
+    /// Find the right spot of the orderAtPrice object into the OrderAtPrice Doubly-linked list, based on the price and on the side
     void MEOrderBook::AddOrderAtPrice(MEOrdersAtPrice* new_orderAtPrice) noexcept{
         price_to_orders_at_price_.at(priceToIndex(new_orderAtPrice->price_)) = new_orderAtPrice;
 
@@ -104,9 +104,9 @@ namespace trading::exchange {
         
     }
 
-    void MEOrderBook::cancel(ClientId clientid, OrderId orderId, TickerId tickerId) noexcept{
+    void MEOrderBook::cancel(ClientId clientid, OrderId orderId) noexcept{
         if(clientid >= cid_oid_to_order_.size() || orderId >= cid_oid_to_order_.at(clientid).size() || cid_oid_to_order_.at(clientid).at(orderId) == nullptr){
-            matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::CANCEL_REJECTED, clientid, tickerId, orderId,
+            matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::CANCEL_REJECTED, clientid, ticker_, orderId,
                                                                     OrderId_INVALID, Side::INVALID, Price_INVALID, Qty_INVALID, Qty_INVALID});
             return;
         }
@@ -115,8 +115,8 @@ namespace trading::exchange {
 
         removeOrder(order);
 
-        matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::CANCELLED, clientid, tickerId, orderId, order->market_order_id_, order->side_, order->price_, Qty_INVALID, order->qty_});
-        matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::CANCEL, order->market_order_id_, tickerId, order->side_, order->price_, order->priority_});
+        matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::CANCELLED, clientid, ticker_, orderId, order->market_order_id_, order->side_, order->price_, Qty_INVALID, order->qty_});
+        matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::CANCEL, order->market_order_id_, ticker_, order->side_, order->price_, order->qty_, order->priority_});
     }
 
     ///Find the order in the OrderAtPrice, if the level is contains only this order deallocate the OrderAtPrice level from its pool, update the list, then deallocate order from its pool
@@ -158,8 +158,56 @@ namespace trading::exchange {
         orders_at_price_pool_.deallocate(orderAtPrice);
     }
 
-    Qty MEOrderBook::checkForMatch([[maybe_unused]] ClientId clientId,[[maybe_unused]] OrderId client_orderId,[[maybe_unused]] TickerId tickerId,[[maybe_unused]] Side side,[[maybe_unused]] Price price,[[maybe_unused]] Qty qty,[[maybe_unused]] OrderId market_order_id){
-        return 0;
+    Qty MEOrderBook::checkForMatch(ClientId clientId, OrderId client_orderId, Side side, Price price, Qty qty, OrderId market_order_id){
+        Qty left_over = qty;
+
+        if(side == Side::BUY){
+            while(left_over > 0 && asks_by_price_){
+                if(price < asks_by_price_->orders_head_->price_){
+                    break;
+                }
+                match(clientId, client_orderId, market_order_id, side, asks_by_price_->orders_head_, left_over);
+            }
+
+        } else if(side == Side::SELL){
+            while (left_over > 0 && bids_by_price_){
+                if(price > bids_by_price_->orders_head_->price_){
+                    break;
+                }
+                match(clientId, client_orderId, market_order_id, side, bids_by_price_->orders_head_, left_over);
+            }
+        }
+
+        return left_over;
+    }
+
+    ///Given a passive order and an aggressive order that match handle the matching
+    void MEOrderBook::match(ClientId clientId, OrderId client_orderId, OrderId market_orderId, Side side, MEOrder* order, Qty& left) noexcept{
+        const auto order_qty = order->qty_;
+        const auto filled_qty = std::min(order_qty, left);
+
+        left -= filled_qty;
+        order->qty_ -= filled_qty;
+
+        //answer to the client of the aggressive order 
+        matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::FILLED, clientId, ticker_, client_orderId, 
+                                                            market_orderId, side, order->price_, filled_qty, left});
+
+        //answer to the client of the passive order 
+        matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::FILLED, order->client_id_, ticker_, order->client_order_id_, 
+                                                            order->market_order_id_, order->side_, order->price_, filled_qty, order->qty_});
+
+        matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::TRADE, OrderId_INVALID, ticker_, side, order->price_, filled_qty, Priority_INVALID});            
+
+
+        if(order_qty == 0){
+            matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::CANCEL, order->market_order_id_, ticker_, order->side_, order->price_, order->qty_, order->priority_});            
+
+            removeOrder(order);
+        } else {
+            matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::MODIFY, order->market_order_id_, ticker_, order->side_, order->price_, order->qty_, order->priority_});            
+        }
+                
     }
 
 }

@@ -46,6 +46,7 @@ namespace trading::exchange{
         TickerId ticker_id_ = TickerId_INVALID;
         Side side_ = Side::INVALID;
         Price price_ = Price_INVALID;
+        Qty qty = Qty_INVALID;
         Priority priority_ = Priority_INVALID; 
     
         inline auto toString() const {

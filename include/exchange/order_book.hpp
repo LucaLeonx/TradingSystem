@@ -39,6 +39,7 @@ namespace trading::exchange{
         inline OrderId generateNextOrderId() noexcept{
             return next_order_id_++;
         }
+
         inline Price priceToIndex(const Price p) const noexcept{
             return p % ME_MAX_PRICE_LEVELS; 
         }
@@ -53,10 +54,12 @@ namespace trading::exchange{
                 return 1;
             }
 
-            return orderLevel->orders_head_->prev_order_->priority_ + 1; //TODO: check that it exists?
+            return orderLevel->orders_head_->prev_order_->priority_ + 1;
         }
 
-        Qty checkForMatch(ClientId clientId, OrderId client_orderId, TickerId tickerId, Side side, Price price, Qty qty, OrderId market_order_id);
+        Qty checkForMatch(ClientId clientId, OrderId client_orderId, Side side, Price price, Qty qty, OrderId market_order_id);
+
+        void match(ClientId clientId, OrderId client_orderId, OrderId market_orderId, Side side, MEOrder* order, Qty& left) noexcept;
 
         void AddOrderToPriceLevel(MEOrder* orderObj) noexcept;
 
@@ -76,9 +79,9 @@ namespace trading::exchange{
         MEOrderBook& operator=(MEOrderBook&) = delete;
         MEOrderBook& operator=(MEOrderBook&&) = delete;
 
-        void add(ClientId clientId, OrderId client_orderId, TickerId tickerId, Side side, Price price, Qty qty) noexcept;
+        void add(ClientId clientId, OrderId client_orderId, Side side, Price price, Qty qty) noexcept;
         
-        void cancel(ClientId clientId, OrderId orderId, TickerId tickerId) noexcept;
+        void cancel(ClientId clientId, OrderId orderId) noexcept;
 
         std::string toString(bool detailed, bool validity_check) const;
     };
