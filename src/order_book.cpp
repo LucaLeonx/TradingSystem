@@ -9,7 +9,7 @@ namespace trading::exchange {
     }
 
     MEOrderBook::~MEOrderBook(){
-        logger_.log("%:% %() %\tDestroying the Order Book for the ticker:, SELF DESTRUCTION IN  3   2   1...\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), ticker_);
+        logger_.log("%:% %() %\tDestroying the Order Book for the ticker: %, SELF DESTRUCTION IN  3   2   1...\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), tickerIdToString(ticker_));
 
         bids_by_price_ = nullptr;
         asks_by_price_ = nullptr;
@@ -19,6 +19,7 @@ namespace trading::exchange {
         }
     }
 
+    /// Add request to the order book
     void MEOrderBook::add(ClientId clientId, OrderId client_orderId, TickerId tickerId, Side side, Price price, Qty qty) noexcept{
         const OrderId new_market_order_id = generateNextOrderId();
 
@@ -38,6 +39,7 @@ namespace trading::exchange {
 
     }
 
+    ///Add Order to its OrderAtPrice level, if its related OrderAtPrice doesn't exists it allocate one through the OrderAtPrice memory pool 
     void MEOrderBook::AddOrderToPriceLevel(MEOrder* order) noexcept{
         auto orderAtPrice = getOrderAtPrice(order->price_);
         
@@ -56,6 +58,7 @@ namespace trading::exchange {
         cid_oid_to_order_.at(order->client_id_).at(order->client_order_id_) = order;
     }
 
+    /// Find the right spot of the orderAtPrice object into the OrderAtPrice Doubly-linked list 
     void MEOrderBook::AddOrderAtPrice(MEOrdersAtPrice* new_orderAtPrice) noexcept{
         price_to_orders_at_price_.at(priceToIndex(new_orderAtPrice->price_)) = new_orderAtPrice;
 
@@ -101,10 +104,59 @@ namespace trading::exchange {
         
     }
 
-    void MEOrderBook::cancel([[maybe_unused]] ClientId clientid,[[maybe_unused]]  OrderId orderId,[[maybe_unused]]  TickerId tickerId) noexcept{
-        
+    void MEOrderBook::cancel(ClientId clientid, OrderId orderId, TickerId tickerId) noexcept{
+        if(clientid >= cid_oid_to_order_.size() || orderId >= cid_oid_to_order_.at(clientid).size() || cid_oid_to_order_.at(clientid).at(orderId) == nullptr){
+            matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::CANCEL_REJECTED, clientid, tickerId, orderId,
+                                                                    OrderId_INVALID, Side::INVALID, Price_INVALID, Qty_INVALID, Qty_INVALID});
+            return;
+        }
+
+        auto order = cid_oid_to_order_.at(clientid).at(orderId);
+
+        removeOrder(order);
+
+        matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::CANCELLED, clientid, tickerId, orderId, order->market_order_id_, order->side_, order->price_, Qty_INVALID, order->qty_});
+        matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::CANCEL, order->market_order_id_, tickerId, order->side_, order->price_, order->priority_});
     }
 
+    ///Find the order in the OrderAtPrice, if the level is contains only this order deallocate the OrderAtPrice level from its pool, update the list, then deallocate order from its pool
+    void MEOrderBook::removeOrder(MEOrder* order) noexcept{
+        auto orderLevel = getOrderAtPrice(order->price_);
+
+        if(orderLevel->orders_head_ == order->prev_order_){
+            removeOrderAtPrice(orderLevel);
+        } else { 
+            order->prev_order_->next_order_ = order->next_order_;
+            order->next_order_->prev_order_ = order->prev_order_;
+            if(order == orderLevel->orders_head_){
+                orderLevel->orders_head_ = order->next_order_; 
+            }
+
+            order->next_order_ = order->prev_order_ = nullptr;
+        }
+
+        cid_oid_to_order_[order->client_id_][order->client_id_] = nullptr;
+        orders_pool_.deallocate(order);
+    }
+
+    void MEOrderBook::removeOrderAtPrice(MEOrdersAtPrice* orderAtPrice) noexcept{
+        auto& ordersLevelsHead = (orderAtPrice->side_ == Side::BUY) ? bids_by_price_ : asks_by_price_;
+        
+        if(ordersLevelsHead == orderAtPrice){
+            ordersLevelsHead = nullptr;
+        } else {
+            //Update the linked-list by removing the input object
+            orderAtPrice->prev_->next_ = orderAtPrice->next_;
+            orderAtPrice->next_->prev_ = orderAtPrice->prev_;
+            if(ordersLevelsHead == orderAtPrice){ //Check the head of the linked list
+                ordersLevelsHead = orderAtPrice->next_;
+            }
+            //Deallocate all of its orders
+            orderAtPrice->prev_ = orderAtPrice->next_ = nullptr;
+        }
+        price_to_orders_at_price_[orderAtPrice->price_] = nullptr;
+        orders_at_price_pool_.deallocate(orderAtPrice);
+    }
 
     Qty MEOrderBook::checkForMatch([[maybe_unused]] ClientId clientId,[[maybe_unused]] OrderId client_orderId,[[maybe_unused]] TickerId tickerId,[[maybe_unused]] Side side,[[maybe_unused]] Price price,[[maybe_unused]] Qty qty,[[maybe_unused]] OrderId market_order_id){
         return 0;

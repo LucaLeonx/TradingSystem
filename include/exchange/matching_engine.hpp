@@ -14,6 +14,9 @@
 namespace trading::exchange{
     class MatchingEngine final{
     private:
+        std::string time_str_;
+        Logger logger_;
+    
         OrderBookHashMap ticker_order_book_;
 
         ClientRequestLFQueue& incoming_request_queue_;
@@ -23,9 +26,6 @@ namespace trading::exchange{
         std::thread thread_;
 
         volatile bool run_{false};
-
-        std::string time_str_;
-        Logger logger_;
 
     public:
         explicit MatchingEngine(ClientRequestLFQueue& requests_queue, ClientResponseLFQueue& response_queue, MEMarketUpdateLFQueue& market_updates_queue);

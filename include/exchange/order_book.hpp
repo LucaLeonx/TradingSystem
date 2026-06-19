@@ -62,6 +62,10 @@ namespace trading::exchange{
 
         void AddOrderAtPrice(MEOrdersAtPrice* orderAtPriceObj) noexcept;
 
+        void removeOrder(MEOrder* orderObj) noexcept;
+
+        void removeOrderAtPrice(MEOrdersAtPrice* orderObj) noexcept;
+
     public:
         explicit MEOrderBook(TickerId ticker, Logger& logger, MatchingEngine& matching_engine);
 

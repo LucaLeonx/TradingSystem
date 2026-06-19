@@ -3,10 +3,10 @@
 namespace trading::exchange{
 
     MatchingEngine::MatchingEngine(ClientRequestLFQueue& requests_queue, ClientResponseLFQueue& response_queue, MEMarketUpdateLFQueue& market_updates_queue) 
-        : incoming_request_queue_(requests_queue), outcoming_response_queue_(response_queue),  market_updates_queue_(market_updates_queue), logger_("Matching_Engine.log") 
+        : logger_("Matching_Engine.log"), incoming_request_queue_(requests_queue), outcoming_response_queue_(response_queue),  market_updates_queue_(market_updates_queue) 
     {
         for(size_t i{}; i < ticker_order_book_.size(); ++i){
-            ticker_order_book_[i] = std::make_unique<MEOrderBook>(i, logger_, *this); //TODO Modify with raw pointers? 
+            ticker_order_book_[i] = std::make_unique<MEOrderBook>(i, logger_, *this);
         }
     }
 
@@ -17,13 +17,11 @@ namespace trading::exchange{
         std::this_thread::sleep_for(1s);
         logger_.log("%:% %() %\tDestroying the Matching Engine, SELF DESTRUCTION IN  3   2   1...\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_));
 
-
         if(thread_.joinable()) thread_.join();
-        //TODO: In case of raw pointers free them
     }
 
     auto MatchingEngine::processClientRequest(const MEClientRequest& client_request) noexcept{
-        auto order_book = ticker_order_book_[client_request.ticker_id_].get();
+        auto& order_book = ticker_order_book_[client_request.ticker_id_];
         switch(client_request.type_){
             case ClientRequestType::NEW:
                 order_book->add(client_request.client_id_, client_request.order_id_, client_request.ticker_id_, client_request.side_, client_request.price_, client_request.qty_);
