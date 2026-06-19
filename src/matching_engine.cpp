@@ -6,7 +6,7 @@ namespace trading::exchange{
         : incoming_request_queue_(requests_queue), outcoming_response_queue_(response_queue),  market_updates_queue_(market_updates_queue), logger_("Matching_Engine.log") 
     {
         for(size_t i{}; i < ticker_order_book_.size(); ++i){
-            ticker_order_book_[i] = std::make_unique<MEOrderBook>(); //TODO Modify with raw pointers? 
+            ticker_order_book_[i] = std::make_unique<MEOrderBook>(i, logger_, *this); //TODO Modify with raw pointers? 
         }
     }
 
@@ -26,10 +26,10 @@ namespace trading::exchange{
         auto order_book = ticker_order_book_[client_request.ticker_id_].get();
         switch(client_request.type_){
             case ClientRequestType::NEW:
-                order_book->add(); //TODO
+                order_book->add(client_request.client_id_, client_request.order_id_, client_request.ticker_id_, client_request.side_, client_request.price_, client_request.qty_);
                 break;
             case ClientRequestType::CANCEL:
-                order_book->cancel(); //TODO
+                order_book->cancel(client_request.client_id_, client_request.order_id_, client_request.ticker_id_);
                 break;
             case ClientRequestType::INVALID:
                 ASSERT(false, "Received INVALID ClientRequest");
@@ -51,7 +51,7 @@ namespace trading::exchange{
     }
 
     //Publish the response to the client into the responses Lock-free queue, outcoming_response_queue_
-    auto MatchingEngine::sendClientResponse(MEClientResponse&& client_response) noexcept{
+    void MatchingEngine::sendClientResponse(MEClientResponse&& client_response) noexcept{
         logger_.log("%:% %() % - Send response: %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), client_response.toString());
         
         auto& next_write = outcoming_response_queue_.getNextWrite();
@@ -59,7 +59,7 @@ namespace trading::exchange{
         outcoming_response_queue_.updateNextWrite();
     }
 
-    auto MatchingEngine::sendMarketUpdate(MEMarketUpdate&& market_update) noexcept{
+    void MatchingEngine::sendMarketUpdate(MEMarketUpdate&& market_update) noexcept{
         logger_.log("%:% %() % - Send market data update: %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), market_update.toString());
         
         auto& next_write = market_updates_queue_.getNextWrite();

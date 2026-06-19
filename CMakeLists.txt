@@ -13,6 +13,7 @@ set(SOURCES
     src/tcp_socket.cpp
     src/tcp_server.cpp
     src/matching_engine.cpp
+    src/order_book.cpp
 ) 
 
 add_executable(main src/exchange_main.cpp ${SOURCES})

@@ -28,7 +28,7 @@ namespace trading::exchange{
         Logger logger_;
 
     public:
-        MatchingEngine(ClientRequestLFQueue& requests_queue, ClientResponseLFQueue& response_queue, MEMarketUpdateLFQueue& market_updates_queue);
+        explicit MatchingEngine(ClientRequestLFQueue& requests_queue, ClientResponseLFQueue& response_queue, MEMarketUpdateLFQueue& market_updates_queue);
 
         ~MatchingEngine();
 
@@ -40,9 +40,9 @@ namespace trading::exchange{
 
         auto processClientRequest(const MEClientRequest& client_request) noexcept;
 
-        auto sendClientResponse(MEClientResponse&& client_response) noexcept;
+        void sendClientResponse(MEClientResponse&& client_response) noexcept;
 
-        auto sendMarketUpdate(MEMarketUpdate&& market_update) noexcept;
+        void sendMarketUpdate(MEMarketUpdate&& market_update) noexcept;
 
         MatchingEngine() = delete;
         MatchingEngine(MatchingEngine& other) = delete;

@@ -37,6 +37,8 @@ namespace trading::exchange{
                prev_order_(prev_ptr)
         {}
 
+        MEOrder() = default; //Defaule constructor for the memory pool
+
         inline auto toString() const {
             std::stringstream ss;
             ss << "MEOrder"
@@ -69,6 +71,8 @@ namespace trading::exchange{
         MEOrdersAtPrice(Side s, Price p, MEOrder *first_order, MEOrdersAtPrice* next, MEOrdersAtPrice* prev) 
             : side_(s), price_(p), orders_head_(first_order), next_(next), prev_(prev) {} 
 
+        MEOrdersAtPrice() = default; //Defaule constructor for the memory pool
+
         inline auto toString() const {
             std::stringstream ss;
             ss << "MEOrdersAtPrice"
@@ -83,7 +87,7 @@ namespace trading::exchange{
     };
 
     using OrderHashMap = std::array<MEOrder*, ME_MAX_ORDER_IDS>;
-    using ClientOrderHashMap = std::array<OrderHashMap, ME_MAX_ORDER_IDS>;
+    using ClientOrderHashMap = std::array<OrderHashMap, ME_MAX_NUM_CLIENTS>;
     
     using OrderAtPriceHashMap = std::array<MEOrdersAtPrice*, ME_MAX_PRICE_LEVELS>;
 }
