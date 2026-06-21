@@ -58,6 +58,21 @@ namespace trading::exchange{
         }
     };
 
+    struct __attribute__((packed)) OGClientResquest {
+        size_t seq_num_ = 0;
+        MEClientRequest me_client_request_;
+
+        inline auto toString() const {
+            std::stringstream ss;
+            ss << "OGClientRequests"
+                << " ["
+                << " seq num: " << seq_num_
+                << " :" << me_client_request_.toString()
+                << "]";
+            return ss.str();
+        }
+    };
+
     using ClientRequestLFQueue = spscQueue<MEClientRequest>;
 
 }

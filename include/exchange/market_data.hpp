@@ -1,4 +1,3 @@
-///used by the matching engine to provide market data updates to the market data publishing component.
 #pragma once
 
 #include <sstream>
@@ -13,7 +12,10 @@ namespace trading::exchange{
         ADD = 1,
         MODIFY = 2,
         CANCEL = 3, 
-        TRADE = 4
+        TRADE = 4,
+        CLEAR = 5,
+        SNAPSHOT_START = 6,
+        SNAPSHOT_END = 7
     };
 
     inline std::ostream& operator<<(std::ostream& os, MarketUpdateType c){
@@ -34,11 +36,21 @@ namespace trading::exchange{
             case MarketUpdateType::TRADE:   
                 os << "TRADE";
                 break;
+            case MarketUpdateType::CLEAR:   
+                os << "CLEAR";
+                break;
+            case MarketUpdateType::SNAPSHOT_START:   
+                os << "SNAPSHOT_START";
+                break;
+            case MarketUpdateType::SNAPSHOT_END:   
+                os << "SNAPSHOT_END";
+                break;
             default: os << "UNKNOWN";
         }
         return os;
     }
 
+    ///used by the matching engine to provide market data updates to the market data publishing component.
     struct __attribute__((packed)) MEMarketUpdate {
         MarketUpdateType type_ = MarketUpdateType::INVALID;
 
@@ -64,5 +76,22 @@ namespace trading::exchange{
         }
     };
 
+    ///Public format, used by the market data publishing component to provide market data updates to market clients.
+    struct __attribute__((packed)) MDPMarketUpdate {
+        size_t seq_num_ = 0;
+        MEMarketUpdate me_market_update_;
+
+        inline auto toString() const {
+            std::stringstream ss;
+            ss << "MDParketUpdate"
+                << " ["
+                << " seq num: " << seq_num_
+                << " message: " << me_market_update_.toString()
+                << "]";
+            return ss.str();
+        }
+    };
+
     using MEMarketUpdateLFQueue = spscQueue<MEMarketUpdate>;
+    using MDPMarketUpdateLFQueue = spscQueue<MDPMarketUpdate>;
 }

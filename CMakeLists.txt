@@ -14,6 +14,7 @@ set(SOURCES
     src/tcp_server.cpp
     src/matching_engine.cpp
     src/order_book.cpp
+    src/order_server.cpp
 ) 
 
 add_executable(main src/exchange_main.cpp ${SOURCES})

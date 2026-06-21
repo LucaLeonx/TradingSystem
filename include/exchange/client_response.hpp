@@ -70,6 +70,21 @@ namespace trading::exchange{
         }
     };
 
+    struct __attribute__((packed)) OGClientResponse {
+        size_t seq_num_ = 0;
+        MEClientResponse me_client_response_;
+
+        inline auto toString() const {
+            std::stringstream ss;
+            ss << "OGClientResponse"
+                << " ["
+                << " seq num: " << seq_num_
+                << " :" << me_client_response_.toString()
+                << "]";
+            return ss.str();
+        }
+    };
+
     using ClientResponseLFQueue = spscQueue<MEClientResponse>;
 
 }
