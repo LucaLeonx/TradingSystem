@@ -44,6 +44,11 @@ namespace trading::exchange{
 
         void run() noexcept;
 
+        OrderServer(OrderServer& ) = delete;
+        OrderServer(OrderServer&& ) = delete;
+        OrderServer& operator=(OrderServer& ) = delete;
+        OrderServer& operator=(OrderServer&& ) = delete;
+
         /// Read client request from the TCP receive buffer, check for sequence gaps and forward it to the FIFO sequencer.
         auto recvCallbacks(TCPSocket* socket, Nanos rx_time) noexcept{
             logger_.log("%:% %() % Received socket:% len:% rx:%\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_),

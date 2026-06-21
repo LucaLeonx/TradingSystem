@@ -13,8 +13,6 @@ namespace trading::exchange{
 
     OrderServer::~OrderServer(){
         stop();
-        if(thread_.joinable())
-            thread_.join();
 
         using namespace std::literals::chrono_literals;
         std::this_thread::sleep_for(1s);

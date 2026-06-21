@@ -12,9 +12,12 @@ include_directories(include)
 set(SOURCES
     src/tcp_socket.cpp
     src/tcp_server.cpp
+    src/mcast_socket.cpp
     src/matching_engine.cpp
     src/order_book.cpp
     src/order_server.cpp
+    src/market_data_publisher.cpp
+    src/snapshot_synthetizer.cpp
 ) 
 
 add_executable(main src/exchange_main.cpp ${SOURCES})

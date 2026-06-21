@@ -11,13 +11,11 @@ namespace trading::exchange{
     }
 
     MatchingEngine::~MatchingEngine(){
-        run_ = false;
+        stop();
 
         using namespace std::literals::chrono_literals;
         std::this_thread::sleep_for(1s);
         logger_.log("%:% %() %\tDestroying the Matching Engine, SELF DESTRUCTION IN  3   2   1...\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_));
-
-        if(thread_.joinable()) thread_.join();
     }
 
     auto MatchingEngine::processClientRequest(const MEClientRequest& client_request) noexcept{
@@ -72,7 +70,8 @@ namespace trading::exchange{
 
     void MatchingEngine::stop(){
         run_ = false;
-        if(thread_.joinable()) thread_.join();
+        if(thread_.joinable()) 
+            thread_.join();
     }
 
 }
