@@ -74,7 +74,7 @@ namespace trading::exchange {
         size_t snap_size = 0;
 
         auto snap_start = MDPMarketUpdate{snap_size++, MEMarketUpdate{MarketUpdateType::SNAPSHOT_START, last_seq_num_}};
-        snapshot_socket_.send(&snap_size, sizeof(snap_start));
+        snapshot_socket_.send(&snap_start, sizeof(snap_start));
 
         for(TickerId ticker = 0; ticker < ticker_order_to_update_.size(); ticker++){
             auto& orders = ticker_order_to_update_[ticker];
@@ -96,7 +96,7 @@ namespace trading::exchange {
         }
  
         auto snap_end = MDPMarketUpdate{snap_size++, MEMarketUpdate{MarketUpdateType::SNAPSHOT_END, last_seq_num_}};
-        snapshot_socket_.send(&snap_size, sizeof(snap_end));
+        snapshot_socket_.send(&snap_end, sizeof(snap_end));
         snapshot_socket_.sendAndRecv();
 
         logger_.log("%:% %() % Published snapshot of % orders.\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), snap_size - 1);

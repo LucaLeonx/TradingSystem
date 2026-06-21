@@ -28,7 +28,7 @@ private:
 
 public: 
     Logger(const std::string& filename, size_t queueLength = defaultQueueSize) : fileName(filename), loggerQueue(queueLength){
-        file.open(filename);
+        file.open("logs/" + filename);
         ASSERT(file.is_open(),"File creation failed.");
         loggerThread = createAndStartThread(-1, "logger" + filename, [this]{ flushQueue();});
     } 

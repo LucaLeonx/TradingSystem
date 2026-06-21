@@ -20,6 +20,9 @@ set(SOURCES
     src/snapshot_synthetizer.cpp
 ) 
 
+# Create a folder for logs inside the build directory
+file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/logs)   
+
 add_executable(main src/exchange_main.cpp ${SOURCES})
 
 enable_testing()
