@@ -10,20 +10,20 @@ set(CMAKE_CXX_FLAGS "-std=c++2a -Wall -Wextra -Werror -fsanitize=address")
 include_directories(include)
 
 set(SOURCES
-    src/tcp_socket.cpp
-    src/tcp_server.cpp
-    src/mcast_socket.cpp
-    src/matching_engine.cpp
-    src/order_book.cpp
-    src/order_server.cpp
-    src/market_data_publisher.cpp
-    src/snapshot_synthetizer.cpp
+    src/network/tcp_socket.cpp
+    src/network/tcp_server.cpp
+    src/network/mcast_socket.cpp
+    src/exchange/matching_engine.cpp
+    src/exchange/order_book.cpp
+    src/exchange/order_server.cpp
+    src/exchange/market_data_publisher.cpp
+    src/exchange/snapshot_synthetizer.cpp
 ) 
 
 # Create a folder for logs inside the build directory
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/logs)   
 
-add_executable(main src/exchange_main.cpp ${SOURCES})
+add_executable(main src/exchange/exchange_main.cpp ${SOURCES})
 
 enable_testing()
 
