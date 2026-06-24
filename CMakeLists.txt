@@ -13,17 +13,20 @@ set(SOURCES
     src/network/tcp_socket.cpp
     src/network/tcp_server.cpp
     src/network/mcast_socket.cpp
+
     src/exchange/matching_engine.cpp
     src/exchange/order_book.cpp
     src/exchange/order_server.cpp
     src/exchange/market_data_publisher.cpp
     src/exchange/snapshot_synthetizer.cpp
+
+    src/client/market_data_consumer.cpp
 ) 
 
 # Create a folder for logs inside the build directory
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/logs)   
 
-add_executable(main src/exchange/exchange_main.cpp ${SOURCES})
+add_executable(exchange_main src/exchange/exchange_main.cpp ${SOURCES})
 
 enable_testing()
 

@@ -37,6 +37,12 @@ namespace trading::client {
 
         void recvCallbacks(McastSocket* socket) noexcept;
 
+        void startSnapshotSync();
+
+        void queueMessage(const bool is_snapshot, const trading::exchange::MDPMarketUpdate* message);
+
+        void checkSnapshotSync();
+
     public:
         MarketDataConsumer(ClientId clientId, trading::exchange::MEMarketUpdateLFQueue& market_update_queue, const std::string& iface, 
                             const std::string snapshot_ip, const int snapshot_port, const std::string incremental_ip, const int incremental_port);
@@ -46,6 +52,11 @@ namespace trading::client {
         void start();
 
         void stop();
+
+        MarketDataConsumer(MarketDataConsumer& ) = delete; 
+        MarketDataConsumer(MarketDataConsumer&& ) = delete; 
+        MarketDataConsumer& operator=(MarketDataConsumer& ) = delete; 
+        MarketDataConsumer& operator=(MarketDataConsumer&& ) = delete; 
 
     };
 }
