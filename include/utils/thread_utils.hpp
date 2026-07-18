@@ -18,7 +18,7 @@ inline bool setThreadAffinity(int core_id) noexcept{
 
 ///Create Thread, set its affinity and passes the function through perfer forwarding
 template<typename T, typename... A>
-inline auto createAndStartThread(int core_id, const std::string& name, T&& func, A&& ...args) noexcept{
+[[nodiscard]] inline auto createAndStartThread(int core_id, const std::string& name, T&& func, A&& ...args) noexcept{
 
     auto threadBody = [&](){
         if(core_id >= 0 && !setThreadAffinity(core_id)){
