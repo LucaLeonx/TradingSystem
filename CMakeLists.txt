@@ -21,6 +21,7 @@ set(SOURCES
     src/exchange/snapshot_synthetizer.cpp
 
     src/client/market_data_consumer.cpp
+    src/client/market_order_book.cpp
 ) 
 
 # Create a folder for logs inside the build directory

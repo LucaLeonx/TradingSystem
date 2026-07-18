@@ -4,6 +4,7 @@
 #include "utils/mem_pool.hpp"
 
 #include "client/market_order.hpp"
+#include "trade_engine.hpp"
 #include "client/trade_engine.hpp"
 #include "exchange/market_data.hpp"
 
@@ -23,6 +24,10 @@ namespace trading::client{
         }
 
         inline void setTradeEngine(TradeEngine *tradeEngine){ trade_engine_ = tradeEngine; }
+
+        void onMarketUpdate(const trading::exchange::MEMarketUpdate& market_update) noexcept;
+
+        void updateBBO(bool update_bid, bool update_ask) noexcept;
 
         std::string toString(bool detailed, bool validity_check) const;
 
@@ -54,6 +59,22 @@ namespace trading::client{
 
         std::string time_str_;
         Logger& logger_;
+
+        inline auto priceToIndex(Price price) const noexcept {
+            return (price % ME_MAX_PRICE_LEVELS);
+        }
+
+        inline MarketOrdersAtPrice * getOrdersAtPrice(Price price) const noexcept {
+            return oid_to_price_level_.at(priceToIndex(price));
+        }
+
+        void AddOrder(MarketOrder* orderObj) noexcept;
+
+        void AddOrderAtPrice(MarketOrdersAtPrice* orderAtPriceObj) noexcept;
+
+        void removeOrder(MarketOrder* orderObj) noexcept;
+
+        void removeOrderAtPrice(MarketOrdersAtPrice* orderObj) noexcept;
 
     };
     
