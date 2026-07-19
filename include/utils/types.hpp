@@ -82,7 +82,8 @@ namespace trading{
     enum class Side : int8_t{
         INVALID = 0,
         BUY = 1,
-        SELL = -1
+        SELL = -1,
+        MAX = 2
     };
 
     inline auto sideToString(Side side) -> std::string {
@@ -92,10 +93,19 @@ namespace trading{
                 return "BUY";
             case Side::SELL:
                 return "SELL";
+            case Side::MAX:
+                return "MAX";
             case Side::INVALID:
                 return "INVALID";
         }
         return "UNKNOWN";
     }
 
+    inline constexpr size_t sideToIndex(Side side) noexcept{
+        return static_cast<size_t>(side) + 1;
+    }
+
+    inline constexpr int sideToValue(Side side) noexcept{
+        return static_cast<int>(side);
+    }
 }
