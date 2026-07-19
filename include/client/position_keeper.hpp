@@ -93,8 +93,8 @@ namespace trading::client{
         PositionKeeper& operator=(PositionKeeper& ) = delete;
         PositionKeeper& operator=(PositionKeeper&& ) = delete;
 
-        inline const PositionInfo& getPositionInfo(TickerId ticker) const noexcept{
-            return ticker_position_.at(ticker);
+        inline const PositionInfo* getPositionInfo(TickerId ticker) const noexcept{
+            return &(ticker_position_.at(ticker));
         } 
 
         inline auto toString() const {
