@@ -23,6 +23,7 @@ set(SOURCES
     src/client/market_data_consumer.cpp
     src/client/market_order_book.cpp
     src/client/order_gateway.cpp
+    src/client/order_manager.cpp
 ) 
 
 # Create a folder for logs inside the build directory

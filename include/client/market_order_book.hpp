@@ -4,7 +4,6 @@
 #include "utils/mem_pool.hpp"
 
 #include "client/market_order.hpp"
-#include "trade_engine.hpp"
 #include "client/trade_engine.hpp"
 #include "exchange/market_data.hpp"
 
