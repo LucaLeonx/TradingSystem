@@ -3,6 +3,7 @@
 #include <limits>
 #include <cstdint>
 #include <string>
+#include <sstream>
 
 #include "utils/macros.hpp"
 

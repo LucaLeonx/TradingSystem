@@ -26,6 +26,7 @@ set(SOURCES
     src/client/order_manager.cpp
     src/client/market_maker.cpp
     src/client/liquidity_taker.cpp
+    src/client/trade_engine.cpp
 ) 
 
 # Create a folder for logs inside the build directory

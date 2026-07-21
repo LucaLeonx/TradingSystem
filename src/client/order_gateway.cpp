@@ -3,7 +3,7 @@
 namespace trading::client{
     OrderGateway::OrderGateway(ClientId clientId, trading::exchange::ClientRequestLFQueue& client_requestes, trading::exchange::ClientResponseLFQueue& client_responses,
                                 std::string ip, std::string& iface, int port)
-                                : client_id_(client_id_), outgoing_requests_(client_requestes), incoming_responses_(client_responses), 
+                                : client_id_(clientId), ip_(ip), iface_(iface), port_(port), outgoing_requests_(client_requestes), incoming_responses_(client_responses), 
                                   logger_("ClientOrderGateway" + clientIdToString(client_id_) + ".log"), tcp_socket_(logger_)
     {
         tcp_socket_.recv_callback_ = [this](auto socket, auto rx_time){ recvCallback(socket, rx_time); };

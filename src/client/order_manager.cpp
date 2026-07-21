@@ -42,9 +42,9 @@ namespace trading::client{
                 }
             }
             break;
-            case OMOrderState::INVALID:
-            case OMOrderState::PENDING_CANCEL:
-            case OMOrderState::PENDING_NEW:
+            case OMOrderState::INVALID: break;
+            case OMOrderState::PENDING_CANCEL: break;
+            case OMOrderState::PENDING_NEW: break;
         }
     }
 
@@ -80,8 +80,8 @@ namespace trading::client{
             }
             break;
 
-            case ClientResponseType::CANCEL_REJECTED:
-            case ClientResponseType::INVALID:
+            case ClientResponseType::CANCEL_REJECTED: break;
+            case ClientResponseType::INVALID: break;
         }
     }
 

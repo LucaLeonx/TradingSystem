@@ -4,7 +4,6 @@
 #include "utils/mem_pool.hpp"
 
 #include "client/market_order.hpp"
-#include "client/trade_engine.hpp"
 #include "exchange/market_data.hpp"
 
 namespace trading::client{
@@ -12,15 +11,9 @@ namespace trading::client{
 
     class MarketOrderBook {
     public:
-        MarketOrderBook(TickerId ticker, Logger logger) : ticker_id(ticker), orders_at_price_pool_(ME_MAX_PRICE_LEVELS), order_pool_(ME_MAX_ORDER_IDS), logger_(logger) {}
+        MarketOrderBook(TickerId ticker, Logger& logger) : ticker_id_(ticker), orders_at_price_pool_(ME_MAX_PRICE_LEVELS), order_pool_(ME_MAX_ORDER_IDS), logger_(logger) {}
 
-        ~MarketOrderBook(){
-            logger_.log("%:% %() % OrderBook\n%\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), toString(false, true));
-
-            trade_engine_ = nullptr;
-            bids_by_price_ = asks_by_price_ = nullptr;
-            oid_to_order_.fill(nullptr);
-        }
+        ~MarketOrderBook();
 
         inline void setTradeEngine(TradeEngine *tradeEngine){ trade_engine_ = tradeEngine; }
 
@@ -40,7 +33,7 @@ namespace trading::client{
         MarketOrderBook& operator=(MarketOrderBook&) = delete;
 
     private:
-        const TickerId ticker_id;
+        const TickerId ticker_id_;
 
         TradeEngine* trade_engine_ = nullptr;
 
@@ -77,5 +70,4 @@ namespace trading::client{
 
     };
     
-    using MarketOrderBookHashMap = std::array<MarketOrder*, ME_MAX_TICKERS>;
 }

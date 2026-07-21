@@ -17,7 +17,7 @@ namespace trading::client{
             return agg_trade_qty_ratio_;
         }
 
-        inline void onOrderBootUpdate(TickerId ticker_id, Price price, Side side, const MarketOrderBook& order_book) noexcept{
+        inline void onOrderBookUpdate(TickerId ticker_id, Price price, Side side, const MarketOrderBook& order_book) noexcept{
             const auto& bbo = order_book.getBBO();
             if(bbo.bid_price_ != Price_INVALID && bbo.ask_price_ != Price_INVALID){
                 mkt_price_ = ((bbo.bid_price_ * bbo.bid_qty_) + (bbo.ask_price_ * bbo.ask_qty_)) / static_cast<double>(bbo.ask_qty_ + bbo.bid_qty_); 
