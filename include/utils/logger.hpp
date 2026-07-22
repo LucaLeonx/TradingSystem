@@ -13,7 +13,7 @@
 
 namespace trading {
 
-constexpr size_t defaultQueueSize = 8 * 1024 * 1024;
+constexpr size_t defaultQueueSize = 8 * 1024;
 const std::string logs_dir{"logs/"};
 
 class Logger final
@@ -37,12 +37,13 @@ public:
         using namespace std::literals::chrono_literals;
 
         while(running){
-            auto toPrint = loggerQueue.getNextRead(); 
-            if(toPrint != nullptr){
+            for(auto toPrint = loggerQueue.getNextRead(); toPrint; toPrint = loggerQueue.getNextRead()){ 
                 file << *toPrint;
                 loggerQueue.updateNextRead();
                 file.flush();
             }
+
+            std::this_thread::sleep_for(20ms);
         }
     }
 
@@ -58,7 +59,6 @@ public:
         std::string newVal = oss.str();
 
         if(newVal.empty()){
-            std::cerr<<"Value cannot be written to a file, no conversion to std::string"<<std::endl;
             return;
         }
         loggerQueue.getNextWrite() = newVal;

@@ -8,7 +8,7 @@
 
 namespace trading {
   /// Size of send and receive buffers in bytes.
-  constexpr size_t McastBufferSize = 64 * 1024 * 1024;
+  constexpr size_t McastBufferSize = 8 * 1024 * 1024;
 
   struct McastSocket {
     McastSocket(Logger &logger)

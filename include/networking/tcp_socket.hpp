@@ -6,7 +6,7 @@
 #include "utils/logger.hpp"
 
 namespace trading{
-    constexpr size_t TCPBufferSize = 64 * 1024 * 1024;
+    constexpr size_t TCPBufferSize = 8 * 1024 * 1024;
 
     struct TCPSocket {
         explicit TCPSocket(Logger &log) : logger_(log){

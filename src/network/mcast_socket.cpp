@@ -44,8 +44,9 @@ namespace trading {
     
     /// Copy data to send buffers - does not send them out yet.
     auto McastSocket::send(const void *data, size_t len) noexcept -> void {
+        ASSERT(next_send_valid_index_ + len <= McastBufferSize,
+               "Mcast socket buffer filled up and sendAndRecv() not called.");
         memcpy(outbound_data_.data() + next_send_valid_index_, data, len);
         next_send_valid_index_ += len;
-        ASSERT(next_send_valid_index_ < McastBufferSize, "Mcast socket buffer filled up and sendAndRecv() not called.");
     }
 }

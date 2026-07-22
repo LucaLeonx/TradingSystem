@@ -12,7 +12,8 @@ namespace trading::client{
 
     class OrderGateway{
     public:
-        OrderGateway(ClientId clientId, trading::exchange::ClientRequestLFQueue& client_requestes, trading::exchange::ClientResponseLFQueue& client_responses, std::string ip, std::string& iface, int port);
+        OrderGateway(const ClientId clientId, trading::exchange::ClientRequestLFQueue& client_requestes, trading::exchange::ClientResponseLFQueue& client_responses, 
+                    const std::string ip, const std::string& iface, const int port);
     
         ~OrderGateway(){
             stop();

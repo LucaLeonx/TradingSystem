@@ -36,7 +36,7 @@ namespace trading::client {
 
     }
 
-    void TradeEngine::SendClientRequest(const trading::exchange::MEClientRequest& client_request) noexcept{
+    void TradeEngine::sendClientRequest(const trading::exchange::MEClientRequest& client_request) noexcept{
         logger_.log("%:% %() % Sending %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), client_request.toString().c_str());
     
         outgoing_requests_.getNextWrite() = client_request;

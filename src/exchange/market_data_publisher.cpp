@@ -26,7 +26,7 @@ namespace trading::exchange {
                 logger_.log("%:% %() % Sending seq:% %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), next_seq_num_, market_update->toString().c_str());
 
                 incremental_socket_.send(&next_seq_num_, sizeof(next_seq_num_));
-                incremental_socket_.send(market_update, size_t(market_update));
+                incremental_socket_.send(market_update, sizeof(*market_update));
                 outgoing_market_data_.updateNextRead();
 
                 auto& next_write = snapshot_updates_.getNextWrite();

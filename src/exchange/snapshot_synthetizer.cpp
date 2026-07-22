@@ -30,7 +30,7 @@ namespace trading::exchange {
 
     void SnapshotSynthetizer::addSnapShot(const MDPMarketUpdate& mdp_market_update){
         auto const& market_update = mdp_market_update.me_market_update_;
-        auto *orders = &ticker_order_to_update_.at(market_update.order_id_);
+        auto *orders = &ticker_order_to_update_.at(market_update.ticker_id_);
     
         switch(market_update.type_){
             case MarketUpdateType::ADD :{

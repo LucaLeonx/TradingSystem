@@ -5,7 +5,7 @@ namespace trading::client{
     void OrderManager::newOrder(OMOrder& order, TickerId tickerId, Price price, Side side, Qty qty) noexcept{
         const trading::exchange::MEClientRequest newRequest{trading::exchange::ClientRequestType::NEW, trade_engine_.clientId(), tickerId, next_order_id_, side, price, qty};
 
-        trade_engine_.SendClientRequest(newRequest);
+        trade_engine_.sendClientRequest(newRequest);
 
         order = {tickerId, next_order_id_, side, price, qty, OMOrderState::PENDING_NEW};
         ++next_order_id_;
@@ -18,7 +18,7 @@ namespace trading::client{
         const trading::exchange::MEClientRequest cancelRequest{trading::exchange::ClientRequestType::CANCEL, trade_engine_.clientId(), 
                     order.ticker_id_, order.order_id_, order.side_, order.price_, order.qty_};
 
-        trade_engine_.SendClientRequest(cancelRequest);
+        trade_engine_.sendClientRequest(cancelRequest);
 
         order.order_state_ = OMOrderState::PENDING_CANCEL;
 

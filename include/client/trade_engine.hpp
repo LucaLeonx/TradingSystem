@@ -56,7 +56,7 @@ namespace trading::client {
         void onTradeUpdate(const trading::exchange::MEMarketUpdate& market_update, MarketOrderBook* order_book) noexcept;
 
         ///Write a client request to the lock-free queue in common with the order server to send to the exchange
-        void SendClientRequest(const trading::exchange::MEClientRequest& client_request) noexcept;
+        void sendClientRequest(const trading::exchange::MEClientRequest& client_request) noexcept;
 
         ///Process client responses, updates the PositionKeeper and informs trading algorithm
         void onOrderUpdate(const trading::exchange::MEClientResponse& client_response) noexcept;

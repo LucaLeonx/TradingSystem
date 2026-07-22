@@ -44,6 +44,8 @@ namespace trading::exchange {
         auto orderAtPrice = getOrderAtPrice(order->price_);
         
         if(!orderAtPrice){
+            order->next_order_ = order;
+            order->prev_order_ = order;
             orderAtPrice = orders_at_price_pool_.allocate(order->side_, order->price_, order, nullptr, nullptr);
             AddOrderAtPrice(orderAtPrice);
         } else {
@@ -113,17 +115,24 @@ namespace trading::exchange {
 
         auto order = cid_oid_to_order_.at(clientid).at(orderId);
 
+        // Snapshot values before removeOrder() deallocates the order object.
+        const auto market_order_id = order->market_order_id_;
+        const auto side = order->side_;
+        const auto price = order->price_;
+        const auto qty = order->qty_;
+        const auto priority = order->priority_;
+
         removeOrder(order);
 
-        matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::CANCELLED, clientid, ticker_, orderId, order->market_order_id_, order->side_, order->price_, Qty_INVALID, order->qty_});
-        matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::CANCEL, order->market_order_id_, ticker_, order->side_, order->price_, order->qty_, order->priority_});
+        matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::CANCELLED, clientid, ticker_, orderId, market_order_id, side, price, Qty_INVALID, qty});
+        matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::CANCEL, market_order_id, ticker_, side, price, qty, priority});
     }
 
     ///Find the order in the OrderAtPrice, if the level is contains only this order deallocate the OrderAtPrice level from its pool, update the list, then deallocate order from its pool
     void MEOrderBook::removeOrder(MEOrder* order) noexcept{
         auto orderLevel = getOrderAtPrice(order->price_);
 
-        if(orderLevel->orders_head_ == order->prev_order_){
+        if(order->next_order_ == order && order->prev_order_ == order){
             removeOrderAtPrice(orderLevel);
         } else { 
             order->prev_order_->next_order_ = order->next_order_;
@@ -135,14 +144,14 @@ namespace trading::exchange {
             order->next_order_ = order->prev_order_ = nullptr;
         }
 
-        cid_oid_to_order_[order->client_id_][order->client_id_] = nullptr;
+        cid_oid_to_order_[order->client_id_][order->client_order_id_] = nullptr;
         orders_pool_.deallocate(order);
     }
 
     void MEOrderBook::removeOrderAtPrice(MEOrdersAtPrice* orderAtPrice) noexcept{
         auto& ordersLevelsHead = (orderAtPrice->side_ == Side::BUY) ? bids_by_price_ : asks_by_price_;
         
-        if(ordersLevelsHead == orderAtPrice){
+        if(orderAtPrice->next_ == orderAtPrice){
             ordersLevelsHead = nullptr;
         } else {
             //Update the linked-list by removing the input object
@@ -154,7 +163,7 @@ namespace trading::exchange {
             //Deallocate all of its orders
             orderAtPrice->prev_ = orderAtPrice->next_ = nullptr;
         }
-        price_to_orders_at_price_[orderAtPrice->price_] = nullptr;
+        price_to_orders_at_price_[priceToIndex(orderAtPrice->price_)] = nullptr;
         orders_at_price_pool_.deallocate(orderAtPrice);
     }
 
@@ -200,7 +209,7 @@ namespace trading::exchange {
         matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::TRADE, OrderId_INVALID, ticker_, side, order->price_, filled_qty, Priority_INVALID});            
 
 
-        if(order_qty == 0){
+        if(order->qty_ == 0){
             matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::CANCEL, order->market_order_id_, ticker_, order->side_, order->price_, order->qty_, order->priority_});            
 
             removeOrder(order);

@@ -61,7 +61,7 @@ namespace trading::exchange{
             }
 
             size_t i{};
-            for(; i + requestSize; i += requestSize){
+            for(; i + requestSize <= socket->recv_next_valid_idx_; i += requestSize){
                 auto request = reinterpret_cast<const OGClientResquest*>(socket->recv_buffer_.data() + i);
 
                 logger_.log("%:% %() % Received %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), request->toString());

@@ -1,8 +1,8 @@
 #include "client/order_gateway.hpp"
 
 namespace trading::client{
-    OrderGateway::OrderGateway(ClientId clientId, trading::exchange::ClientRequestLFQueue& client_requestes, trading::exchange::ClientResponseLFQueue& client_responses,
-                                std::string ip, std::string& iface, int port)
+    OrderGateway::OrderGateway(const ClientId clientId, trading::exchange::ClientRequestLFQueue& client_requestes, trading::exchange::ClientResponseLFQueue& client_responses,
+                                const std::string ip, const std::string& iface, const int port)
                                 : client_id_(clientId), ip_(ip), iface_(iface), port_(port), outgoing_requests_(client_requestes), incoming_responses_(client_responses), 
                                   logger_("ClientOrderGateway" + clientIdToString(client_id_) + ".log"), tcp_socket_(logger_)
     {
