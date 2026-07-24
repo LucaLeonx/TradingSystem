@@ -209,6 +209,7 @@ namespace trading::exchange {
         matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::TRADE, OrderId_INVALID, ticker_, side, order->price_, filled_qty, Priority_INVALID});            
 
 
+        Price price = order->price_;
         if(order->qty_ == 0){
             matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::CANCEL, order->market_order_id_, ticker_, order->side_, order->price_, order->qty_, order->priority_});            
 
@@ -217,6 +218,8 @@ namespace trading::exchange {
             matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::MODIFY, order->market_order_id_, ticker_, order->side_, order->price_, order->qty_, order->priority_});            
         }
                 
+        logger_.log("%:% %() % MATCH on ticker: % for a qty of: % and a price of: %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), ticker_, filled_qty, price);
+
     }
 
 }

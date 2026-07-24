@@ -21,13 +21,14 @@ class Logger final
 private: 
     std::ofstream file;
     const std::string fileName;
+    const size_t queueCapacity;
 
     std::atomic<bool> running{true};
     spscQueue<std::string> loggerQueue;
     std::thread loggerThread;
 
 public: 
-    Logger(const std::string& filename, size_t queueLength = defaultQueueSize) : fileName(filename), loggerQueue(queueLength){
+    Logger(const std::string& filename, size_t queueLength = defaultQueueSize) : fileName(filename), queueCapacity(queueLength), loggerQueue(queueLength){
         file.open("logs/" + filename);
         ASSERT(file.is_open(),"File creation failed.");
         loggerThread = createAndStartThread(-1, "logger" + filename, [this]{ flushQueue();});
@@ -60,6 +61,10 @@ public:
 
         if(newVal.empty()){
             return;
+        }
+
+        while(loggerQueue.size() >= queueCapacity){
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
         loggerQueue.getNextWrite() = newVal;
         loggerQueue.updateNextWrite();
