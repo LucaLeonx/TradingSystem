@@ -51,6 +51,7 @@ namespace trading::exchange{
 
         /// Read client request from the TCP receive buffer, check for sequence gaps and forward it to the FIFO sequencer.
         auto recvCallbacks(TCPSocket* socket, Nanos rx_time) noexcept{
+            TTT_MEASURE(T1_OrderServer_tcp_read, logger_);
             logger_.log("%:% %() % Received socket:% len:% rx:%\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_),
                   socket->fd_, socket->recv_next_valid_idx_, rx_time);
             
@@ -85,7 +86,10 @@ namespace trading::exchange{
                 }
 
                 ++expected_seq_num;
+
+                START_MEASURE(Exchange_FIFOSequencer_AddClientRequest);
                 fifo_sequencer_.addClientRequest(rx_time, request->me_client_request_);
+                END_MEASURE(Exchange_FIFOSequencer_AddClientRequest, logger_);
             }
 
             memmove(socket->recv_buffer_.data(), socket->recv_buffer_.data() + i, socket->recv_next_valid_idx_ - i);
@@ -93,7 +97,9 @@ namespace trading::exchange{
         }
 
         void recvFinishedCallbacks() noexcept{
+            START_MEASURE(Exchange_FIFOSequencer_sequenceAndPublish);
             fifo_sequencer_.sequenceAndPublish();
+            END_MEASURE(Exchange_FIFOSequencer_sequenceAndPublish, logger_);
         }
     };
 }

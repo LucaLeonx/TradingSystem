@@ -41,6 +41,7 @@ namespace trading::client {
     
         outgoing_requests_.getNextWrite() = client_request;
         outgoing_requests_.updateNextWrite();
+        TTT_MEASURE(T10_TradeEngine_LFQueue_write, logger_);
     }
 
     void TradeEngine::run() noexcept{
@@ -48,6 +49,7 @@ namespace trading::client {
 
         while(run_){
             for(auto response = incoming_responses_.getNextRead(); response; response = incoming_responses_.getNextRead()){
+                TTT_MEASURE(T9t_TradeEngine_LFQueue_read, logger_);
                 logger_.log("%:% %() % Processing %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), response->toString().c_str());
             
                 onOrderUpdate(*response);
@@ -56,6 +58,7 @@ namespace trading::client {
             }
 
             for(auto market_update = incoming_market_updates_.getNextRead(); market_update; market_update = incoming_market_updates_.getNextRead()){
+                TTT_MEASURE(T9_TradeEngine_LFQueue_read, logger_);
                 logger_.log("%:% %() % Processing %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), market_update->toString().c_str());
             
                 ASSERT(market_update->ticker_id_ <= ME_MAX_TICKERS, "Unknown ticker Id " + tickerIdToString(market_update->ticker_id_));
@@ -74,29 +77,43 @@ namespace trading::client {
         
         auto bbo = order_book->getBBO();
 
+        START_MEASURE(Trading_PositionKeeper_updateBBO);
         position_keeper_.updateBBO(ticker, bbo);
+        END_MEASURE(Trading_PositionKeeper_updateBBO, logger_);
 
+        START_MEASURE(Trading_FeatureEngine_onOrderBookUpdate);
         feature_engine_.onOrderBookUpdate(ticker, price, side, *order_book);
+        END_MEASURE(Trading_FeatureEngine_onOrderBookUpdate, logger_);
 
+        START_MEASURE(Trading_TradeEngine_algoOnOrderBookUpdate_);
         algoOnOrderBookUpdate_(ticker, price, side, *order_book);
+        END_MEASURE(Trading_TradeEngine_algoOnOrderBookUpdate_, logger_);
     } 
 
     void TradeEngine::onTradeUpdate(const trading::exchange::MEMarketUpdate& market_update, MarketOrderBook* order_book) noexcept{
         logger_.log("%:% %() % %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), market_update.toString().c_str());
 
+        START_MEASURE(Trading_FeatureEngine_onTradeUpdate);
         feature_engine_.onTradeUpdate(market_update, *order_book);
+        END_MEASURE(Trading_FeatureEngine_onTradeUpdate, logger_);
 
+        START_MEASURE(Trading_TradeEngine_algoOnTradeUpdate);
         algoOnTradeUpdate_(market_update, *order_book);
+        END_MEASURE(Trading_TradeEngine_algoOnTradeUpdate, logger_);
     }
 
     void TradeEngine::onOrderUpdate(const trading::exchange::MEClientResponse& client_response) noexcept{
         logger_.log("%:% %() % %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), client_response.toString().c_str());
 
         if(client_response.type_ == trading::exchange::ClientResponseType::FILLED){
+            START_MEASURE(Trading_PositionKeeper_addFill);
             position_keeper_.addFill(client_response);
+            END_MEASURE(Trading_PositionKeeper_addFill, logger_);
         }
 
+        START_MEASURE(Trading_TradeEngine_algoOnOrderUpdate);
         algoOnOrderUpdate_(client_response);
+        END_MEASURE(Trading_TradeEngine_algoOnOrderUpdate, logger_);
     }
 
 

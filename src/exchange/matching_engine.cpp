@@ -21,12 +21,18 @@ namespace trading::exchange{
     auto MatchingEngine::processClientRequest(const MEClientRequest& client_request) noexcept{
         auto& order_book = ticker_order_book_[client_request.ticker_id_];
         switch(client_request.type_){
-            case ClientRequestType::NEW:
+            case ClientRequestType::NEW: {
+                START_MEASURE(Exchange_MEOrderBook_add);
                 order_book->add(client_request.client_id_, client_request.order_id_, client_request.side_, client_request.price_, client_request.qty_);
-                break;
-            case ClientRequestType::CANCEL:
+                END_MEASURE(Exchange_MEOrderBook_add, logger_);
+            }
+            break;
+            case ClientRequestType::CANCEL:{
+                START_MEASURE(Exchange_MEOrderBook_cancel);
                 order_book->cancel(client_request.client_id_, client_request.order_id_);
-                break;
+                END_MEASURE(Exchange_MEOrderBook_cancel, logger_);
+            }
+            break;
             case ClientRequestType::INVALID:
                 ASSERT(false, "Received INVALID ClientRequest");
                 break;
@@ -39,8 +45,13 @@ namespace trading::exchange{
         while(run_){
             const auto client_request = incoming_request_queue_.getNextRead();
             if(client_request){
+                TTT_MEASURE(T3_MatchingEngine_LFQueue_read, logger_);
                 logger_.log("%:% %() %- Processing:  %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), client_request->toString());
+                
+                START_MEASURE(Exchange_MatchingEngine_processClientRequest);
                 processClientRequest(*client_request);
+                END_MEASURE(Exchange_MatchingEngine_processClientRequest, logger_);
+                
                 incoming_request_queue_.updateNextRead();
             }
         }
@@ -53,6 +64,7 @@ namespace trading::exchange{
         auto& next_write = outcoming_response_queue_.getNextWrite();
         next_write = std::move(client_response);
         outcoming_response_queue_.updateNextWrite();
+        TTT_MEASURE(T4t_MathcingEngine_LFQueue_write, logger_);
     }
 
     void MatchingEngine::sendMarketUpdate(MEMarketUpdate&& market_update) noexcept{
@@ -61,6 +73,7 @@ namespace trading::exchange{
         auto& next_write = market_updates_queue_.getNextWrite();
         next_write = std::move(market_update);
         market_updates_queue_.updateNextWrite();
+        TTT_MEASURE(T4_MathcingEngine_LFQueue_write, logger_);
     }
 
     void MatchingEngine::start(){

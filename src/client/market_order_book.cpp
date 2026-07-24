@@ -20,7 +20,9 @@ namespace trading::client{
             case MarketUpdateType::ADD :{
                 auto order = order_pool_.allocate(market_update.order_id_, market_update.side_, market_update.price_, market_update.qty_, market_update.priority_, nullptr, nullptr);
 
+                START_MEASURE(Trading_MarketOrderBook_addOrder);
                 AddOrder(order);
+                END_MEASURE(Trading_MarketOrderBook_addOrder, logger_);
             }
             break;
             case MarketUpdateType::MODIFY :{
@@ -30,7 +32,9 @@ namespace trading::client{
             break;
             case MarketUpdateType::CANCEL :{
                 auto order = oid_to_order_[market_update.order_id_];
+                START_MEASURE(Trading_MarketOrderBook_removeOrder);
                 removeOrder(order);
+                END_MEASURE(Trading_MarketOrderBook_removeOrder, logger_);
             }
             break;
             case MarketUpdateType::TRADE :{
@@ -62,7 +66,9 @@ namespace trading::client{
             case MarketUpdateType::INVALID : break;
         }
 
+        START_MEASURE(Trading_MarketOrderBook_updateBBO);
         updateBBO(bid_updated, ask_updated);
+        END_MEASURE(Trading_MarketOrderBook_updateBBO, logger_);
 
         logger_.log("%:% %() % % %", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), market_update.toString(), bbo_.toString());
 

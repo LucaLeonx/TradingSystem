@@ -16,10 +16,18 @@ namespace trading::client{
             tcp_socket_.sendAndRecv();
 
             for(auto client_request = outgoing_requests_.getNextRead(); client_request; client_request = outgoing_requests_.getNextRead()){
+                TTT_MEASURE(T11_OrderGateway_LFQueue_read, logger_);
+
+                logger_.log("%:% %() % Sending cid:% seq:% %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), 
+                        client_id_, next_outgoing_seq_num_, client_request->toString());
+                
+                START_MEASURE(Trading_TCPSocket_send);
                 tcp_socket_.send(&next_outgoing_seq_num_, sizeof(next_outgoing_seq_num_));
                 tcp_socket_.send(client_request, sizeof(trading::exchange::MEClientRequest));
+                END_MEASURE(Trading_TCPSocket_send, logger_);
                 outgoing_requests_.updateNextRead();
 
+                TTT_MEASURE(T12_OrderGateway_TCP_write, logger_);
                 next_outgoing_seq_num_++;
             }
         }
@@ -27,6 +35,9 @@ namespace trading::client{
 
     /// Callback when an incoming client response is read, we perform some checks and forward it to the lock free queue connected to the trade engine.
     void OrderGateway::recvCallback(TCPSocket *socket, Nanos rx_time) noexcept{
+        TTT_MEASURE(T7t_OrderGateway_TCP_read, logger_);
+
+        START_MEASURE(Trading_OrderGateway_recvCallBack);
         logger_.log("%:% %() % Received socket:% len:% %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), socket->fd_, socket->send_next_valid_idx_, rx_time);
 
         size_t OGresponse_size = sizeof(trading::exchange::OGClientResponse);
@@ -51,11 +62,13 @@ namespace trading::client{
                 ++next_incoming_seq_num_;
                 incoming_responses_.getNextWrite() = response->me_client_response_;
                 incoming_responses_.updateNextWrite();
+                TTT_MEASURE(T8t_orderGateway_LFQueue_write, logger_);
             }
 
             memmove(socket->recv_buffer_.data(), socket->recv_buffer_.data() + 1, socket->recv_next_valid_idx_ - i);
             socket->recv_next_valid_idx_ -= i;
         }
+        END_MEASURE(Trading_OrderGateway_recvCallBack, logger_);
     }
                                 
 

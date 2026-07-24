@@ -54,6 +54,9 @@ namespace trading::client {
     }
 
     void MarketDataConsumer::recvCallbacks(McastSocket* socket) noexcept{
+        TTT_MEASURE(T7_MarketDataConsumer_UDP_read, logger_);
+
+        START_MEASURE(Trading_MarketDataConsumer_recvCallback);
         const bool is_snapshot = socket->socket_fd_ == snapshot_socket_.socket_fd_;
         if(!packet_lost_ && is_snapshot){
             socket->next_rcv_valid_index_ = 0;
@@ -90,12 +93,13 @@ namespace trading::client {
 
                 incoming_market_update_queue_.getNextWrite() = message->me_market_update_;
                 incoming_market_update_queue_.updateNextWrite();
+                TTT_MEASURE(T8_MarketDataConsumer_LFQueue_write, logger_);
             }
 
             memmove(socket->inbound_data_.data(), socket->inbound_data_.data() + 1, socket->next_rcv_valid_index_ - i);
             socket->next_rcv_valid_index_ -= i;
         }
-
+        END_MEASURE(Trading_MarketDataConsumer_recvCallback, logger_);
     }
 
     void MarketDataConsumer::startSnapshotSync(){

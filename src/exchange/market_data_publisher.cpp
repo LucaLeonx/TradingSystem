@@ -23,11 +23,18 @@ namespace trading::exchange {
         while(run_){
 
             for(auto market_update = outgoing_market_data_.getNextRead();outgoing_market_data_.size() > 0 && market_update != nullptr; market_update = outgoing_market_data_.getNextRead()){
+                TTT_MEASURE(T5_MarketDataPublisher, logger_);
                 logger_.log("%:% %() % Sending seq:% %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), next_seq_num_, market_update->toString().c_str());
 
+                START_MEASURE(Exchange_McastSocket_send);
                 incremental_socket_.send(&next_seq_num_, sizeof(next_seq_num_));
                 incremental_socket_.send(market_update, sizeof(*market_update));
+                END_MEASURE(Exchange_McastSocket_send, logger_);
+                
+                
                 outgoing_market_data_.updateNextRead();
+
+                TTT_MEASURE(T6_MarketDataPublisher, logger_);
 
                 auto& next_write = snapshot_updates_.getNextWrite();
                 next_write.seq_num_ = next_seq_num_;

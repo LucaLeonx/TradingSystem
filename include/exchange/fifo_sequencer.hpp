@@ -24,6 +24,7 @@ namespace trading::exchange {
 
                 incoming_request_.getNextWrite() = std::move(pending_client_requests_[i].request_);
                 incoming_request_.updateNextWrite();
+                TTT_MEASURE(T2_OrderServer_LFQueue_write, logger_);
             }
 
             pending_size_ = 0;

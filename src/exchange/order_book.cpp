@@ -25,14 +25,18 @@ namespace trading::exchange {
 
         matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::ACCEPTED, clientId, ticker_, client_orderId, new_market_order_id, side, price, 0, qty});
 
+        START_MEASURE(Exchange_MEOrderBook_checkForMatch);
         const auto qty_left = checkForMatch(clientId, client_orderId, side, price, qty, new_market_order_id);//TODO: implement
+        END_MEASURE(Exchange_MEOrderBook_checkForMatch, logger_);
 
         if(qty_left > 0){
             const auto priority = getPriority(price);
 
             auto orderObj = orders_pool_.allocate(ticker_, clientId, client_orderId, new_market_order_id, side, price, qty_left, priority, nullptr, nullptr);
 
+            START_MEASURE(Exchange_MEOrderBook_addOrder);
             AddOrderToPriceLevel(orderObj);
+            END_MEASURE(Exchange_MEOrderBook_addOrder, logger_);
 
             matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::ADD, new_market_order_id, ticker_, side, price, qty, priority});
         }
@@ -122,7 +126,9 @@ namespace trading::exchange {
         const auto qty = order->qty_;
         const auto priority = order->priority_;
 
+        START_MEASURE(Exchange_MEOrderBook_removeOrder);        
         removeOrder(order);
+        END_MEASURE(Exchange_MEOrderBook_removeOrder, logger_);        
 
         matching_engine_.sendClientResponse(MEClientResponse{ClientResponseType::CANCELLED, clientid, ticker_, orderId, market_order_id, side, price, Qty_INVALID, qty});
         matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::CANCEL, market_order_id, ticker_, side, price, qty, priority});
@@ -175,7 +181,9 @@ namespace trading::exchange {
                 if(price < asks_by_price_->orders_head_->price_){
                     break;
                 }
+                START_MEASURE(Exchange_MEOrderBook_match);
                 match(clientId, client_orderId, market_order_id, side, asks_by_price_->orders_head_, left_over);
+                END_MEASURE(Exchange_MEOrderBook_match, logger_);
             }
 
         } else if(side == Side::SELL){
@@ -183,7 +191,9 @@ namespace trading::exchange {
                 if(price > bids_by_price_->orders_head_->price_){
                     break;
                 }
+                START_MEASURE(Exchange_MEOrderBook_match);
                 match(clientId, client_orderId, market_order_id, side, bids_by_price_->orders_head_, left_over);
+                END_MEASURE(Exchange_MEOrderBook_match, logger_);
             }
         }
 
@@ -213,7 +223,9 @@ namespace trading::exchange {
         if(order->qty_ == 0){
             matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::CANCEL, order->market_order_id_, ticker_, order->side_, order->price_, order->qty_, order->priority_});            
 
+            START_MEASURE(Exchange_MEOrderBook_removeOrder);
             removeOrder(order);
+            END_MEASURE(Exchange_MEOrderBook_removeOrder, logger_);
         } else {
             matching_engine_.sendMarketUpdate(MEMarketUpdate{MarketUpdateType::MODIFY, order->market_order_id_, ticker_, order->side_, order->price_, order->qty_, order->priority_});            
         }

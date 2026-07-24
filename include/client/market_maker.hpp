@@ -28,7 +28,9 @@ namespace trading::client {
                 const auto bid_price = bbo.bid_price_ - (fair_price - bbo.bid_price_ >= threshold ? 0 : 1);
                 const auto ask_price = bbo.ask_price_ + (bbo.ask_price_ - fair_price >= threshold ? 0 : 1);
 
+                START_MEASURE(Trading_Ordermanager_moveOrders);
                 order_manager_.moveOrders(ticker, bid_price, ask_price, clip);
+                END_MEASURE(Trading_Ordermanager_moveOrders, logger_);
             }
         }
         
@@ -37,9 +39,11 @@ namespace trading::client {
         }
 
         inline void onOrderUpdate(const trading::exchange::MEClientResponse& client_response) noexcept {
-          logger_.log("%:% %() % %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), client_response.toString().c_str());
+            logger_.log("%:% %() % %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), client_response.toString().c_str());
 
-          order_manager_.onOrderUpdate(client_response);
+            START_MEASURE(Trading_Ordermanager_onOrderUpdate);
+            order_manager_.onOrderUpdate(client_response);
+            END_MEASURE(Trading_Ordermanager_onOrderUpdate, logger_);
         }
 
         MarketMaker() = delete;
