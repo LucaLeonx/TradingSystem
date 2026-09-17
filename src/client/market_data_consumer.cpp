@@ -67,9 +67,9 @@ namespace trading::client {
             return;
         }
 
-        size_t i{};
-        for(; i + sizeof(trading::exchange::MDPMarketUpdate) <= socket->next_rcv_valid_index_; i += sizeof(trading::exchange::MDPMarketUpdate)){
-            auto message = reinterpret_cast<trading::exchange::MDPMarketUpdate*>(socket->inbound_data_.data() + i);
+        const auto message_size = sizeof(trading::exchange::MDPMarketUpdate);
+        while(socket->next_rcv_valid_index_ >= message_size){
+            auto message = reinterpret_cast<trading::exchange::MDPMarketUpdate*>(socket->inbound_data_.data());
 
             logger_.log("%:% %() % Received % socket len:% %\n", __FILE__, __LINE__, __FUNCTION__,
                     getCurrentTimeStr(&time_str_), (is_snapshot ? "snapshot" : "incremental"), sizeof(trading::exchange::MDPMarketUpdate), message->toString());
@@ -96,8 +96,9 @@ namespace trading::client {
                 TTT_MEASURE(T8_MarketDataConsumer_LFQueue_write, logger_);
             }
 
-            memmove(socket->inbound_data_.data(), socket->inbound_data_.data() + 1, socket->next_rcv_valid_index_ - i);
-            socket->next_rcv_valid_index_ -= i;
+            memmove(socket->inbound_data_.data(), socket->inbound_data_.data() + message_size,
+                    socket->next_rcv_valid_index_ - message_size);
+            socket->next_rcv_valid_index_ -= message_size;
         }
         END_MEASURE(Trading_MarketDataConsumer_recvCallback, logger_);
     }

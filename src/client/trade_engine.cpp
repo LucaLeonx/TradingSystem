@@ -4,7 +4,7 @@ namespace trading::client {
     TradeEngine::TradeEngine(ClientId clientId, AlgoType algo_type, const TradeEngineCfgHashMap& ticker_cfg, 
                     trading::exchange::ClientRequestLFQueue& client_requests, trading::exchange::ClientResponseLFQueue& client_responses, 
                     trading::exchange::MEMarketUpdateLFQueue& market_updates)
-                    : client_id_(clientId), outgoing_requests_(client_requests), incoming_responses_(client_responses), incoming_market_updates_(market_updates), 
+                    : client_id_(clientId), algo_type_(algo_type), outgoing_requests_(client_requests), incoming_responses_(client_responses), incoming_market_updates_(market_updates),
                       logger_("TradeEngine_" + clientIdToString(clientId) + ".log"), feature_engine_(logger_), position_keeper_(logger_), 
                       risk_manager_(logger_, position_keeper_, ticker_cfg), order_manager_(*this, risk_manager_, logger_)
     {
@@ -21,6 +21,10 @@ namespace trading::client {
             mm_algo_ = std::make_unique<MarketMaker>(logger_, *this, feature_engine_, order_manager_, ticker_cfg);
         } else if (algo_type == AlgoType::TAKER) {
             taker_algo_ = std::make_unique<LiquidityTaker>(logger_, *this, feature_engine_, order_manager_, ticker_cfg);
+        } else if (algo_type == AlgoType::RANDOM) {
+            random_algo_ = std::make_unique<RandomTrader>(clientId, [this](const auto& request){
+                sendClientRequest(request);
+            });
         }
 
     }
@@ -48,6 +52,9 @@ namespace trading::client {
         logger_.log("%:% %() %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_));
 
         while(run_){
+            if(algo_type_ == AlgoType::RANDOM)
+                onRandomTimer();
+
             for(auto response = incoming_responses_.getNextRead(); response; response = incoming_responses_.getNextRead()){
                 TTT_MEASURE(T9t_TradeEngine_LFQueue_read, logger_);
                 logger_.log("%:% %() % Processing %\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), response->toString().c_str());
@@ -68,6 +75,11 @@ namespace trading::client {
                 last_event_time_ = getCurrentNanos();
             }
         }
+    }
+
+    void TradeEngine::onRandomTimer() noexcept{
+        if(random_algo_)
+            random_algo_->onTimer();
     }
 
 

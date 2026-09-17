@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <memory>
+#include <array>
 
 #include "exchange/market_data.hpp"
 #include "exchange/client_response.hpp"
@@ -13,6 +14,7 @@
 #include "client/position_keeper.hpp"
 #include "client/market_maker.hpp"
 #include "client/liquidity_taker.hpp"
+#include "client/random_trader.hpp"
 
 namespace trading::client {
     using MarketOrderBookHashMap = std::array<std::unique_ptr<MarketOrderBook>, ME_MAX_TICKERS>;
@@ -20,7 +22,7 @@ namespace trading::client {
 
     class TradeEngine{
     public:
-        TradeEngine(ClientId clientId, AlgoType algo_type, const TradeEngineCfgHashMap& ticker_cfg, 
+        TradeEngine(ClientId clientId, AlgoType algo_type, const TradeEngineCfgHashMap& ticker_cfg,
                     trading::exchange::ClientRequestLFQueue& client_requests, trading::exchange::ClientResponseLFQueue& client_responses, trading::exchange::MEMarketUpdateLFQueue& market_updates);
 
         ~TradeEngine();
@@ -39,12 +41,12 @@ namespace trading::client {
                 std::this_thread::sleep_for(10ms);
             }
 
+            run_ = false;
             if(thread_.joinable())
                 thread_.join();
 
             logger_.log("%:% %() % POSITIONS\n%\n", __FILE__, __LINE__, __FUNCTION__, getCurrentTimeStr(&time_str_), position_keeper_.toString());
         
-            run_ = false;
         }
 
         void run() noexcept;
@@ -60,6 +62,8 @@ namespace trading::client {
 
         ///Process client responses, updates the PositionKeeper and informs trading algorithm
         void onOrderUpdate(const trading::exchange::MEClientResponse& client_response) noexcept;
+
+        void onRandomTimer() noexcept;
 
         inline ClientId clientId() const noexcept{ 
             return client_id_;
@@ -85,6 +89,7 @@ namespace trading::client {
 
     private:
         const ClientId client_id_;
+        const AlgoType algo_type_;
         
         MarketOrderBookHashMap ticker_order_book_;
 
@@ -108,6 +113,7 @@ namespace trading::client {
         //One of the two will be created
         std::unique_ptr<MarketMaker> mm_algo_;
         std::unique_ptr<LiquidityTaker> taker_algo_;
+        std::unique_ptr<RandomTrader> random_algo_;
 
         /// Default methods to initialize the function wrappers.
         auto defaultAlgoOnOrderBookUpdate(TickerId ticker_id, Price price, Side side, MarketOrderBook& ) noexcept -> void {

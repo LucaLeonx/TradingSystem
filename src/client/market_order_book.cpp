@@ -27,11 +27,21 @@ namespace trading::client{
             break;
             case MarketUpdateType::MODIFY :{
                 auto order = oid_to_order_[market_update.order_id_];
+                if(!order){
+                    logger_.log("%:% %() % Ignoring MODIFY for unknown order:%\n", __FILE__, __LINE__, __FUNCTION__,
+                                getCurrentTimeStr(&time_str_), market_update.order_id_);
+                    break;
+                }
                 order->qty_ = market_update.qty_;
             }
             break;
             case MarketUpdateType::CANCEL :{
                 auto order = oid_to_order_[market_update.order_id_];
+                if(!order){
+                    logger_.log("%:% %() % Ignoring CANCEL for unknown order:%\n", __FILE__, __LINE__, __FUNCTION__,
+                                getCurrentTimeStr(&time_str_), market_update.order_id_);
+                    break;
+                }
                 START_MEASURE(Trading_MarketOrderBook_removeOrder);
                 removeOrder(order);
                 END_MEASURE(Trading_MarketOrderBook_removeOrder, logger_);
@@ -148,6 +158,8 @@ namespace trading::client{
         auto orderAtPrice = getOrdersAtPrice(order->price_);
         
         if(!orderAtPrice){
+            order->next_order_ = order;
+            order->prev_order_ = order;
             orderAtPrice = orders_at_price_pool_.allocate(order->side_, order->price_, order, nullptr, nullptr);
             AddOrderAtPrice(orderAtPrice);
         } else {
@@ -165,7 +177,7 @@ namespace trading::client{
     void MarketOrderBook::removeOrder(MarketOrder* order) noexcept{
         auto orderLevel = getOrdersAtPrice(order->price_);
 
-        if(orderLevel->first_order_ == order->prev_order_){
+        if(order->next_order_ == order && order->prev_order_ == order){
             removeOrderAtPrice(orderLevel);
         } else { 
             order->prev_order_->next_order_ = order->next_order_;
@@ -184,7 +196,7 @@ namespace trading::client{
     void MarketOrderBook::removeOrderAtPrice(MarketOrdersAtPrice* orderAtPrice) noexcept{
         auto& ordersLevelsHead = (orderAtPrice->side_ == Side::BUY) ? bids_by_price_ : asks_by_price_;
         
-        if(ordersLevelsHead == orderAtPrice){
+        if(orderAtPrice->next_ == orderAtPrice){
             ordersLevelsHead = nullptr;
         } else {
             //Update the linked-list by removing the input object

@@ -22,8 +22,6 @@ int main(int argc, char **argv){
     const auto algo_type = trading::stringToAlgoType(argv[2]);
 
     Logger logger("TradingMain_" + trading::clientIdToString(client_id) + ".log");
-    const int sleep_time = 20 * 1000;
-
     exchange::ClientRequestLFQueue client_request(ME_MAX_CLIENTS_UPDATES);
     exchange::ClientResponseLFQueue client_response(ME_MAX_CLIENTS_UPDATES);
     exchange::MEMarketUpdateLFQueue market_updates(ME_MAX_CLIENTS_UPDATES);
@@ -71,44 +69,6 @@ int main(int argc, char **argv){
 
 
 
-
-    // For the random trading algorithm, we simply implement it here instead of creating a new trading algorithm which is another possibility.
-    // Generate random orders with random attributes and randomly cancel some of them.
-    if (algo_type == AlgoType::RANDOM) {
-        OrderId order_id = client_id * 1000;
-        
-        std::vector<exchange::MEClientRequest> client_requests_vec;
-        std::array<Price, ME_MAX_TICKERS> ticker_base_price;
-        for (size_t i = 0; i < ME_MAX_TICKERS; ++i)
-            ticker_base_price[i] = (rand() % 100) + 100;
-        
-        for (size_t i = 0; i < 10000; ++i) {
-            const TickerId ticker_id = rand() % ME_MAX_TICKERS;
-            const Price price = ticker_base_price[ticker_id] + (rand() % 10) + 1;
-            const Qty qty = 1 + (rand() % 100) + 1;
-            const Side side = (rand() % 2 ? Side::BUY : Side::SELL);
-
-            exchange::MEClientRequest new_request{exchange::ClientRequestType::NEW, client_id, ticker_id, order_id++, side,
-                                                price, qty};
-            trade_engine.sendClientRequest(new_request);
-            usleep(sleep_time);
-
-            client_requests_vec.push_back(new_request);
-            const auto cxl_index = rand() % client_requests_vec.size();
-            auto cxl_request = client_requests_vec[cxl_index];
-            cxl_request.type_ = exchange::ClientRequestType::CANCEL;
-            trade_engine.sendClientRequest(cxl_request);
-
-            usleep(sleep_time);
-
-            if (trade_engine.silentSeconds() >= 60) {
-                logger.log("%:% %() % Stopping early because been silent for % seconds...\n", __FILE__, __LINE__, __FUNCTION__,
-                            getCurrentTimeStr(&time_str), trade_engine.silentSeconds());
-
-                break;
-            }
-        }
-    }
 
     while (trade_engine.silentSeconds() < 60) {
         logger.log("%:% %() % Waiting till no activity, been silent for % seconds...\n", __FILE__, __LINE__, __FUNCTION__,
