@@ -64,7 +64,7 @@ namespace trading::exchange{
         auto& next_write = outcoming_response_queue_.getNextWrite();
         next_write = std::move(client_response);
         outcoming_response_queue_.updateNextWrite();
-        TTT_MEASURE(T4t_MathcingEngine_LFQueue_write, logger_);
+        TTT_MEASURE(T4t_MatchingEngine_LFQueue_write, logger_);
     }
 
     void MatchingEngine::sendMarketUpdate(MEMarketUpdate&& market_update) noexcept{
@@ -73,7 +73,7 @@ namespace trading::exchange{
         auto& next_write = market_updates_queue_.getNextWrite();
         next_write = std::move(market_update);
         market_updates_queue_.updateNextWrite();
-        TTT_MEASURE(T4_MathcingEngine_LFQueue_write, logger_);
+        TTT_MEASURE(T4_MatchingEngine_LFQueue_write, logger_);
     }
 
     void MatchingEngine::start(){
