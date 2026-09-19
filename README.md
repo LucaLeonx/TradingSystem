@@ -4,9 +4,91 @@ The goal of this project is to learn low-level techniques by designing and imple
 
 All the low-level techniques and optimisations will be used in order to achieve maximum performance and lowest latancy as possible.
 
-Suggestions on further optimization are more than welcomed, everything written in this project is hand-written, **no AI involved**.  
 
-## Exchange
+## Prerequisites
+
+- Linux environment
+- C++20-compatible compiler, such as `g++`
+- CMake 3.25 or newer
+- Loopback network interface (`lo`), used by the exchange and clients for local communication
+
+## Build
+
+From the project root, run:
+
+```bash
+./build.sh
+```
+
+This configures the project in `build/` and compiles the exchange, client, and test executables.
+
+## Running the System
+
+Start the exchange first:
+
+```bash
+./build/exchange_main
+```
+
+In a second terminal, start the example clients:
+
+```bash
+./run_clients.sh
+```
+
+The exchange listens for client orders on the local TCP gateway, while market data is distributed over local multicast sockets. Stop the exchange with `Ctrl+C`.
+
+## Client Command-Line Arguments
+
+Clients can be started directly with the following format:
+
+```text
+./build/client_main CLIENT_ID ALGO_TYPE [CLIP THRESHOLD MAX_ORDER_SIZE MAX_POSITION MAX_LOSS]...
+```
+
+Available algorithm types are `MAKER`, `TAKER`, and `RANDOM`. Each five-value configuration group applies to one ticker, in this order:
+
+- `CLIP`: order quantity used by the strategy
+- `THRESHOLD`: strategy-specific threshold
+- `MAX_ORDER_SIZE`: maximum order quantity
+- `MAX_POSITION`: maximum position
+- `MAX_LOSS`: maximum permitted loss
+
+For example:
+
+```bash
+./build/client_main 1 MAKER 100 0.6 150 300 -100
+```
+
+## Performance Results
+
+The following measurements were collected from the trading system during a local run. Individual measurements are shown in blue and the corresponding mean is shown in orange. The results are environment-dependent and should be compared using the same hardware, compiler options, workload, and system configuration.
+
+Additional extensive measurements and analysis are available in [perf_analysis.ipynb](perf_analysis.ipynb).
+
+### Exchange Order Book
+
+Order insertion generally stays around 1-2 microseconds, with occasional higher-latency spikes:
+
+<img src="docs/MeasurementOutput/ExchangeAddOrder_micros.png" alt="Exchange add order performance" width="700">
+
+Order removal generally stays around 2-3 microseconds:
+
+<img src="docs/MeasurementOutput/ExchangeRemoveOrder_micros.png" alt="Exchange remove order performance" width="700">
+
+### Client Feature Engine
+
+Feature updates have a mean generally around 80-120 microseconds, with larger spikes visible in the individual samples:
+
+<img src="docs/MeasurementOutput/FeatureEngineOnOrderUpdate_micros.png" alt="Feature engine order update performance" width="700">
+
+### TCP Socket
+
+TCP send measurements have a mean of approximately 420-600 nanoseconds in this run:
+
+<img src="docs/MeasurementOutput/TCPSocketSend_nanos.png" alt="TCP socket send performance" width="700">
+
+## Exchange Design
 ![](docs/images/Exchange.png)
 
 Formed by three main components:
@@ -55,6 +137,4 @@ The chosen socket connection is UDP for performance reasons, in order to handle 
 
 ## Market Participant
 
-TODO
-
-
+![](docs/images/tradingEngine.png)
