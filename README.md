@@ -1,8 +1,8 @@
 # TradingSystem
 
-The goal of this project is to learn low-level techniques by designing and implementing a Trading System, both exchange-side and client-side in C++.
+A low-latency trading system and exchange simulator written in C++20. It models both sides of a trading ecosystem: an exchange with a matching engine, order gateway, and market-data publisher, and clients running automated trading strategies. 
 
-All the low-level techniques and optimisations will be used in order to achieve maximum performance and lowest latancy as possible.
+The project explores HFT-oriented techniques including custom order-book data structures, memory pools, lock-free queues, TCP order entry, UDP multicast market data, and performance profiling.
 
 
 ## Prerequisites
